@@ -1,5 +1,6 @@
 #Ne pas oublier de retélécharger le données à chaque fois 
 install.packages("dyplr")
+install.packages("haven")
 library(haven)
 library(dplyr)
 
