@@ -169,11 +169,10 @@ data_modifiable <- data_modifiable %>%
     needcare = na_if(needcare, "Not available")
   )
 
-
-
 View(data_modifiable)
 
-#Chaque colonne a un label qui explique le nom ESS de la colonne : je prends cette description comme nom de colonne
+## Nettoyer les noms des colonnes ####
+
 # Extraire les labels
 labels <- sapply(data_modifiable, function(x) attr(x, "label"))
 
