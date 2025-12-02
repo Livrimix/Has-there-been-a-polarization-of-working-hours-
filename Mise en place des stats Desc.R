@@ -25,6 +25,8 @@ data_modifiable <- data_modifiable %>%
          -nace1_1d2j, -nace2_1dpr, -nace1_1d, -nace2_1d2j, -nace1_1dpr,
          -mainclnt, -country, -countryb, -citizenship, -countryw,-seekreas, -wantreas,- availble,
          -isco08_1d, -eseg_1d) 
+
+# (erreur pour vérifier qu'on a bien supprimé cette variable)
 data_modifiable <- data_modifiable %>%
   select(-eseg_1d)
 
