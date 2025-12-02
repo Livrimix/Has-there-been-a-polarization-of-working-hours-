@@ -5,6 +5,7 @@ install.packages("haven")
 install.packages("ISOweek")
 install.packages("forcats")
 install.packages("countrycode")
+library(ggplot2)
 library(countrycode)
 library(forcats)
 library(ISOweek)
@@ -18,7 +19,7 @@ library(stringr)
 data<- read_dta("eu-lfs 2023 sample.dta")
 
 data_modifiable <- data
-data_modifiable <- data_modifiable %>%
+data_modifiable_2 <- data_modifiable_2 %>%
   select(-refweek, -hhnum, -qhhnum, -hhseqnum, -intweek, -intwave, - intquest,
          -mode, - proxy, -region_2d, -region_2dw, -degurba, -cobfath, -cobmoth,
          -migreas, - countrpr, -hhspou, -hhmoth, -hhfath, -jattach, -nace2_1d,
@@ -43,16 +44,15 @@ data_modifiable <- data_modifiable %>%
     hhtype = na_if(hhtype, "Not available")  # remplace "Not available" par NA
   )
 
-
+# "Sex" devient une indicatrice 1=femme, 0=homme
 data_modifiable <- data_modifiable %>%
   mutate(
     sex = case_when(
-      sex == 1 ~ "male",
-      sex == 2 ~ "female",
-      TRUE ~ NA_character_  # tout autre code devient NA
-    ),
-    sex = as_factor(sex)    # convertir en factor
-  )  
+      sex == 1 ~ 0,
+      sex == 2 ~ 1,
+      TRUE ~ NA_real_
+    )
+  )
 
 data_modifiable <- data_modifiable %>%
   mutate(
@@ -186,4 +186,116 @@ names(data_modifiable) <- labels
 
 name_vec <- names(data_modifiable)
 names(data_modifiable) <- make.unique(name_vec, sep = ".")
+
+
+
+# Liste des moms des variables et de leur type
+print(tibble::tibble(
+  variable = names(data_modifiable),
+  type = purrr::map_chr(data_modifiable, ~ paste(class(.x), collapse = ", "))), n=Inf) 
+
+# 48.32959 % d'hommes,  51.67041% de femmes
+prop.table(table(data_modifiable$sex)) * 100
+
+# 45.47575 % de personnes en emploi,  39.28243 % de non employés, 15.24183 de non applicable.
+prop.table(table(data_modifiable$`Being in employment`)) * 100
+
+
+
+# On crée la table qui ne garde que les personnes en emploi
+data_emp <- data_modifiable %>%
+  filter(`Being in employment` == "Employed")
+
+# Histogramme — heures habituellement travaillées
+ggplot(data_emp, aes(x = `Number of hours usually worked, main job`)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 40) +
+  theme_minimal() +
+  labs(
+    title = "Distribution des heures habituellement travaillées (emplois uniquement)",
+    x = "Heures habituelles",
+    y = "Fréquence"
+  )
+
+# Histogramme — heures effectivement travaillées
+ggplot(data_emp, aes(x = `Number of hours actually worked, main job`)) +
+  geom_histogram(fill = "darkred", color = "white", bins = 40) +
+  theme_minimal() +
+  labs(
+    title = "Distribution des heures effectivement travaillées (emplois uniquement)",
+    x = "Heures effectuées",
+    y = "Fréquence"
+  )
+
+# Comparaison des densités des heures habituellement VS effectivement travaillées
+ggplot() +
+  geom_density(
+    data = data_modifiable %>% 
+      filter(`Being in employment` == "Employed"),
+    aes(x = `Number of hours usually worked, main job`, 
+        color = "Heures habituelles",
+        fill = "Heures habituelles"),
+    alpha = 0.3
+  ) +
+  geom_density(
+    data = data_modifiable %>% 
+      filter(`Being in employment` == "Employed"),
+    aes(x = `Number of hours actually worked, main job`, 
+        color = "Heures effectuées",
+        fill = "Heures effectuées"),
+    alpha = 0.3
+  ) +
+  scale_color_manual(values = c("Heures habituelles" = "steelblue",
+                                "Heures effectuées" = "darkred")) +
+  scale_fill_manual(values = c("Heures habituelles" = "steelblue",
+                               "Heures effectuées" = "darkred")) +
+  theme_minimal() +
+  labs(
+    title = "Densités des heures habituellement / effectivement travaillées",
+    x = "Heures",
+    y = "Densité",
+    color = "Type d'heures",
+    fill = "Type d'heures"
+  )
+
+# Comparaison des heures moyennes travaillées par pays
+
+# 1. Préparer les données : heures moyennes par pays (employés seulement)
+hours_by_country <- data_modifiable %>%
+  filter(`Being in employment` == "Employed") %>%
+  group_by(`Country of residence`) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    sd_hours = sd(`Number of hours usually worked, main job`, na.rm = TRUE),
+    se_hours = sd_hours / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(mean_hours)) %>%
+  filter(n > 100)  # Garder seulement les pays avec assez d'observations
+
+# 2. Voir les résultats
+# print(hours_by_country, n = Inf)
+
+# 3. Graphique en barres horizontales (plus lisible)
+ggplot(hours_by_country, 
+       aes(x = reorder(`Country of residence`, mean_hours), 
+           y = mean_hours)) +
+  geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
+  geom_errorbar(aes(ymin = mean_hours - se_hours, 
+                    ymax = mean_hours + se_hours), 
+                width = 0.2, color = "darkgray") +
+  geom_text(aes(label = round(mean_hours, 1)), 
+            hjust = -0.2, size = 3) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Heures hebdomadaires moyennes par pays de résidence",
+    subtitle = "Personnes en emploi seulement | Barres d'erreur = erreur standard",
+    x = "Pays de résidence",
+    y = "Heures habituellement travaillées (moyenne)"
+  ) +
+  theme(
+    axis.text.y = element_text(size = 9),
+    plot.title = element_text(face = "bold")
+  )
 
