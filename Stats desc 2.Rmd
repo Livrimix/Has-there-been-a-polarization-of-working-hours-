@@ -1,0 +1,1187 @@
+---
+title: "Stats desc 2"
+output: html_document
+---
+
+Copie et modification de "mise en place des stats Desc.R"
+
+```{r}
+
+#Ne pas oublier de retélécharger le données à chaque fois 
+install.packages("dyplr")
+install.packages("stringr")
+install.packages("haven")
+install.packages("ISOweek")
+install.packages("forcats")
+install.packages("countrycode")
+library(ggplot2)
+library(countrycode)
+library(forcats)
+library(ISOweek)
+library(haven)
+library(dplyr)
+library(stringr)
+library(purrr)
+library(scales)
+
+# Mise en place des données ####
+
+data<- read_dta("eu-lfs 2023 sample.dta")
+
+data_modifiable <- data
+
+## On renomme le contenu des variabes ####
+data_modifiable <- data_modifiable %>%
+  mutate(
+    refmonth = as_factor(refmonth),           # transforme en factor
+    refmonth = na_if(refmonth, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    hhtype = as_factor(hhtype),           # transforme en factor
+    hhtype = na_if(hhtype, "Not available")  # remplace "Not available" par NA
+  )
+
+# "Sex" devient une indicatrice 1=femme, 0=homme
+data_modifiable <- data_modifiable %>%
+  mutate(
+    sex = case_when(
+      sex == 1 ~ 0,
+      sex == 2 ~ 1,
+      TRUE ~ NA_real_
+    )
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    ageresid = as_factor(ageresid),           # transforme en factor
+    ageresid = na_if(ageresid, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    hhlink = as_factor(hhlink),           # transforme en factor
+    hhlink = na_if(hhlink, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    wkstat = as_factor(wkstat),           # transforme en factor
+    wkstat = na_if(wkstat, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    absreas = as_factor(absreas),           # transforme en factor
+    absreas = na_if(absreas, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    empstat = as_factor(empstat),           # transforme en factor
+    empstat = na_if(empstat, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    numjob = as_factor(numjob),           # transforme en factor
+    numjob = na_if(numjob, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    seekwork = as_factor(seekwork),           # transforme en factor
+    seekwork = na_if(seekwork, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    wantwork = as_factor(wantwork),           # transforme en factor
+    wantwork = na_if(wantwork, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    actmetne = as_factor(actmetne),           # transforme en factor
+    actmetne = na_if(actmetne, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    wishmore = as_factor(wishmore),           # transforme en factor
+    wishmore = na_if(wishmore, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    avaireas = as_factor(avaireas),           # transforme en factor
+    avaireas = na_if(avaireas, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    ilostat = as_factor(ilostat),           # transforme en factor
+    ilostat = na_if(ilostat, "Not available")  # remplace "Not available" par NA
+  )
+
+data_modifiable <- data_modifiable %>%
+  mutate(
+    homework = as_factor(homework),
+    homework = na_if(homework, "Not available"),
+    
+    stapro = as_factor(stapro),
+    stapro = na_if(stapro, "Not available"),
+    
+    isco08_3d = as_factor(isco08_3d),
+    isco08_3d = na_if(isco08_3d, "Not available"),
+    
+    eseg_2d = as_factor(eseg_2d),
+    eseg_2d = na_if(eseg_2d, "Not available"),
+    
+    ftpt = as_factor(ftpt),
+    ftpt = na_if(ftpt, "Not available"),
+    
+    temp = as_factor(temp),
+    temp = na_if(temp, "Not available"),
+    
+    tempdur = as_factor(tempdur),
+    tempdur = na_if(tempdur, "Not available"),
+    
+    tempreas = as_factor(tempreas),
+    tempreas = na_if(tempreas, "Not available"),
+    
+    tempagcy = as_factor(tempagcy),
+    tempagcy = na_if(tempagcy, "Not available"),
+    
+    ftptreas = as_factor(ftptreas),
+    ftptreas = na_if(ftptreas, "Not available"),
+    
+    varitime = as_factor(varitime),
+    varitime = na_if(varitime, "Not available"),
+    
+    lookoj = as_factor(lookoj),
+    lookoj = na_if(lookoj, "Not available"),
+    
+    hwwish = as_factor(hwwish),
+    hwwish = na_if(hwwish, "Not available"),
+    
+    needcare = as_factor(needcare),
+    needcare = na_if(needcare, "Not available")
+  )
+
+View(data_modifiable)
+
+## Nettoyer les noms des colonnes ####
+
+# Extraire les labels
+labels <- sapply(data_modifiable, function(x) attr(x, "label"))
+
+# Remplacer les NULL et les "" par les noms actuels
+labels[sapply(labels, is.null) | labels == ""] <- names(data_modifiable)[sapply(labels, is.null) | labels == ""]
+
+# Appliquer les nouveaux noms
+names(data_modifiable) <- labels
+
+name_vec <- names(data_modifiable)
+names(data_modifiable) <- make.unique(name_vec, sep = ".")
+
+
+# Liste des moms des variables et de leur type
+print(tibble::tibble(
+  variable = names(data_modifiable),
+  type = purrr::map_chr(data_modifiable, ~ paste(class(.x), collapse = ", "))), n=Inf) 
+
+
+```
+
+
+
+Tableau récapitulatif des variables avec leurs codes et labels (utiliser la flêche au nord-est du tableau):
+(ça permet de voir par exemple que country n'a pas de labels)
+
+```{r}
+# Créer un tableau récapitulatif des variables avec leurs codes et labels
+var_summary <- map_df(data_modifiable, function(col) {
+  
+  # Récupérer le label de la variable
+  var_label <- attr(col, "label")
+  if (is.null(var_label)) var_label <- "No label"
+  
+  # Récupérer les niveaux si c'est un facteur
+  if (is.factor(col)) {
+    levels_text <- paste(levels(col), collapse = "; ")
+    codes_text <- paste(seq_along(levels(col)) - 1, collapse = "; ")
+  } else if (is.numeric(col) && length(unique(na.omit(col))) <= 50) {
+    # Pour les numériques avec peu de valeurs uniques
+    unique_vals <- sort(unique(na.omit(col)))
+    levels_text <- paste(unique_vals, collapse = "; ")
+    codes_text <- paste(unique_vals, collapse = "; ")
+  } else {
+    levels_text <- "Continuous/too many values"
+    codes_text <- "N/A"
+  }
+  
+  # Retourner une ligne du tableau
+  tibble(
+    Variable = var_label,
+    Name_in_data = names(col)[1],
+    Type = class(col)[1],
+    Codes = codes_text,
+    Labels = levels_text
+  )
+})
+
+# Afficher le tableau
+print(var_summary, n = Inf)
+
+# Option : écrire dans un fichier CSV pour consultation
+# write_csv(var_summary, "variable_labels_summary.csv")
+```
+
+
+
+
+
+```{r}
+# 48.32959 % d'hommes,  51.67041% de femmes (représentatif)
+prop.table(table(data_modifiable$sex)) * 100
+
+# 45.47575 % de personnes en emploi,  39.28243 % de non employés, 15.24183 de non applicable.
+prop.table(table(data_modifiable$`Being in employment`)) * 100
+```
+
+
+
+```{r}
+# On crée la table qui ne garde que les personnes en emploi
+data_emp <- data_modifiable %>%
+  filter(`Being in employment` == "Employed")
+
+# Histogramme — heures habituellement travaillées
+ggplot(data_emp, aes(x = `Number of hours usually worked, main job`)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 40) +
+  theme_minimal() +
+  labs(
+    title = "Distribution des heures habituellement travaillées (emplois uniquement)",
+    x = "Heures habituelles",
+    y = "Fréquence"
+  )
+```
+
+```{r}
+# Histogramme — heures effectivement travaillées
+ggplot(data_emp, aes(x = `Number of hours actually worked, main job`)) +
+  geom_histogram(fill = "darkred", color = "white", bins = 40) +
+  theme_minimal() +
+  labs(
+    title = "Distribution des heures effectivement travaillées (emplois uniquement)",
+    x = "Heures effectuées",
+    y = "Fréquence"
+  )
+```
+
+```{r}
+# Comparaison des densités des heures habituellement VS effectivement travaillées
+ggplot() +
+  geom_density(
+    data = data_modifiable %>% 
+      filter(`Being in employment` == "Employed"),
+    aes(x = `Number of hours usually worked, main job`, 
+        color = "Heures habituelles",
+        fill = "Heures habituelles"),
+    alpha = 0.3
+  ) +
+  geom_density(
+    data = data_modifiable %>% 
+      filter(`Being in employment` == "Employed"),
+    aes(x = `Number of hours actually worked, main job`, 
+        color = "Heures effectuées",
+        fill = "Heures effectuées"),
+    alpha = 0.3
+  ) +
+  scale_color_manual(values = c("Heures habituelles" = "steelblue",
+                                "Heures effectuées" = "darkred")) +
+  scale_fill_manual(values = c("Heures habituelles" = "steelblue",
+                               "Heures effectuées" = "darkred")) +
+  theme_minimal() +
+  labs(
+    title = "Densités des heures habituellement / effectivement travaillées",
+    x = "Heures",
+    y = "Densité",
+    color = "Type d'heures",
+    fill = "Type d'heures"
+  )
+
+
+```
+On voit que les heures de travailles habituelles sont davantages concentrées en des points (qui correpondent aux heures contractuelles) alors que les heures effectuées varient davantage (c'est moins représentatif car dépend uniquement d'une variation locale i.e le nombre d'heures de travail la semaine à laquelle l'individu a été enquété)
+
+
+```{r}
+
+# Comparaison des heures moyennes travaillées par pays
+
+# 1. Préparer les données : heures moyennes par pays (employés seulement)
+hours_by_country <- data_modifiable %>%
+  filter(`Being in employment` == "Employed") %>%
+  group_by(`Country of residence`) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    sd_hours = sd(`Number of hours usually worked, main job`, na.rm = TRUE),
+    se_hours = sd_hours / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(mean_hours)) %>%
+  filter(n > 100)  # Garder seulement les pays avec assez d'observations
+
+# 2. Voir les résultats
+# print(hours_by_country, n = Inf)
+
+# 3. Graphique en barres horizontales (plus lisible)
+ggplot(hours_by_country, 
+       aes(x = reorder(`Country of residence`, mean_hours), 
+           y = mean_hours)) +
+  geom_bar(stat = "identity", fill = "steelblue", width = 0.7) +
+  geom_errorbar(aes(ymin = mean_hours - se_hours, 
+                    ymax = mean_hours + se_hours), 
+                width = 0.2, color = "darkgray") +
+  geom_text(aes(label = round(mean_hours, 1)), 
+            hjust = -0.2, size = 3) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Heures hebdomadaires moyennes par pays de résidence",
+    subtitle = "Personnes en emploi seulement | Barres d'erreur = erreur standard",
+    x = "Pays de résidence",
+    y = "Heures habituellement travaillées (moyenne)"
+  ) +
+  theme(
+    axis.text.y = element_text(size = 9),
+    plot.title = element_text(face = "bold")
+  )
+
+
+```
+
+```{r}
+
+# 1. Calculer la moyenne des heures par année (et par trimestre si voulu)
+hours_evolution <- data_emp %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    median_hours = median(`Number of hours usually worked, main job`, na.rm = TRUE),
+    sd_hours = sd(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    se_hours = sd_hours / sqrt(n),  # erreur standard
+    ci_lower = mean_hours - 1.96 * se_hours,  # intervalle de confiance 95%
+    ci_upper = mean_hours + 1.96 * se_hours
+  )
+
+# Afficher les données
+print(hours_evolution, n = Inf)
+```
+
+
+```{r}
+
+# 2. Graphique simple : évolution annuelle
+ggplot(hours_evolution, aes(x = `Year of survey`, y = mean_hours)) +
+  geom_line(color = "steelblue", linewidth = 1.2) +
+  geom_point(color = "darkblue", size = 3) +
+  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), 
+              alpha = 0.2, fill = "steelblue") +
+  theme_minimal() +
+  labs(
+    title = "Évolution des heures hebdomadaires habituellement travaillées",
+    subtitle = "Personnes en emploi seulement | Moyenne annuelle avec intervalle de confiance 95%",
+    x = "Année",
+    y = "Heures hebdomadaires moyennes",
+    caption = "Source: EU LFS 2023"
+  ) +
+  scale_x_continuous(breaks = unique(hours_evolution$`Year of survey`)) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+
+```{r}
+
+# 3. Version avec tendance linéaire
+ggplot(hours_evolution, aes(x = `Year of survey`, y = mean_hours)) +
+  geom_line(color = "gray70", linewidth = 1) +
+  geom_point(color = "steelblue", size = 3) +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred", fill = "pink", alpha = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Évolution des heures travaillées avec tendance linéaire",
+    subtitle = "Régression linéaire montrant la tendance générale",
+    x = "Année",
+    y = "Heures hebdomadaires moyennes"
+  ) +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+
+
+```{r}
+# 4. Tendance linéaire - calculer la pente
+if (nrow(hours_evolution) > 1) {
+  model <- lm(mean_hours ~ `Year of survey`, data = hours_evolution)
+  cat("\n=== TENDANCE LINÉAIRE ===\n")
+  cat("Équation: heures =", round(coef(model)[1], 2), "+", 
+      round(coef(model)[2], 4), "× année\n")
+  cat("Pente:", round(coef(model)[2], 4), "heures par an\n")
+  cat("R²:", round(summary(model)$r.squared, 4), "\n")
+  
+  # Calcul du changement total
+  years_range <- range(hours_evolution$`Year of survey`)
+  change_total <- coef(model)[2] * (years_range[2] - years_range[1])
+  cat("Changement estimé sur la période:", round(change_total, 2), "heures\n")
+}
+```
+
+```{r}
+# 5. Tableau récapitulatif détaillé
+cat("\n=== RÉCAPITULATIF PAR ANNÉE ===\n")
+hours_summary <- data_emp %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    Mean = round(mean(`Number of hours usually worked, main job`, na.rm = TRUE), 1),
+    Median = round(median(`Number of hours usually worked, main job`, na.rm = TRUE), 1),
+    SD = round(sd(`Number of hours usually worked, main job`, na.rm = TRUE), 1),
+    Min = round(min(`Number of hours usually worked, main job`, na.rm = TRUE), 1),
+    Max = round(max(`Number of hours usually worked, main job`, na.rm = TRUE), 1),
+    N = n(),
+    .groups = "drop"
+  )
+
+print(hours_summary, n = Inf)
+```
+
+
+
+
+
+
+
+Evolution des heures de travail en fonction du quintile :
+
+Utilisons la variable de revenu (déciles) : Monthly take home pay from main job, 2009-2020 (deciles)
+
+La variable a 3 catégories spéciales :
+
+-3 = "Not available" (575,202 obs) → Le problème principal !
+-2 = "Not applicable" (44,884 obs)
+-1 = "No answer" (37,022 obs)
+
+Les vrais déciles sont 1-10 :
+
+1 = "Below the 1st decile" (20,731 obs)
+2 = "Between the 1st and the 2nd decile" (19,610 obs)
+...
+10 = "More or equal to the 9th decile" (18,725 obs)
+
+Problème temporel :
+
+1983-2008 : Toutes les observations sont en -3 ("Not available")
+2009-2020 : Les déciles réels (1-10) apparaissent
+2021-2022 : Retour à -3 seulement
+
+Heures moyennes suspectes :
+Décile 1 : 26.7h (bas, plausible)
+Décile 10 : 41.9h (haut, plausible)
+
+Mais -2 ("Not applicable") : 44.7h (très haut, suspect)
+-3 ("Not available") : 38.9h (médiane à 40h)
+
+
+```{r}
+
+# CORRECTION : Filtrer seulement les vrais déciles (1-10) et les années où ils existent (2009-2020)
+data_hours_income_corrected <- data_emp %>%
+  rename(income_var = `Monthly take home pay from main job, 2009-2020 (deciles)`) %>%
+  # Filtrer : garder seulement les vrais déciles (1-10)
+  filter(income_var >= 1 & income_var <= 10) %>%
+  # Filtrer : garder seulement les années 2009-2020
+  filter(`Year of survey` >= 2009 & `Year of survey` <= 2020) %>%
+  # Créer les quartiles de revenu PROPRES
+  mutate(
+    income_quintile = case_when(
+      income_var <= 2 ~ "Q1 (0-20%)",
+      income_var <= 4 ~ "Q2 (20-40%)",
+      income_var <= 6 ~ "Q3 (40-60%)",
+      income_var <= 8 ~ "Q4 (60-80%)",
+      income_var <= 10 ~ "Q5 (80-100%)"
+    ),
+    income_quintile = factor(income_quintile,
+                            levels = c("Q1 (0-20%)", "Q2 (20-40%)", "Q3 (40-60%)",
+                                      "Q4 (60-80%)", "Q5 (80-100%)"))
+  )
+
+# Vérifier la nouvelle distribution
+cat("=== DISTRIBUTION CORRIGÉE ===\n")
+corrected_dist <- data_hours_income_corrected %>%
+  group_by(income_quintile) %>%
+  summarise(
+    n = n(),
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    median_hours = median(`Number of hours usually worked, main job`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print(corrected_dist)
+
+```
+```{r}
+# Vérification : nombre d'observations par année
+cat("\n=== OBSERVATIONS PAR ANNÉE (après correction) ===\n")
+year_counts <- data_hours_income_corrected %>%
+  group_by(`Year of survey`) %>%
+  summarise(n = n(), .groups = "drop")
+
+print(year_counts)
+#C'est bien régulier, proche de 16 000 observations par année 
+```
+
+```{r}
+# Calculer l'évolution par année et quintile
+hours_by_income_corrected <- data_hours_income_corrected %>%
+  group_by(`Year of survey`, income_quintile) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    se_hours = sd(`Number of hours usually worked, main job`, na.rm = TRUE) / sqrt(n),
+    .groups = "drop"
+  )
+
+# Graphique
+ggplot(hours_by_income_corrected,
+       aes(x = `Year of survey`, y = mean_hours, color = income_quintile)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  geom_ribbon(aes(ymin = mean_hours - 1.96 * se_hours,
+                  ymax = mean_hours + 1.96 * se_hours,
+                  fill = income_quintile),
+              alpha = 0.1, linetype = 0) +
+  theme_minimal() +
+  labs(
+    title = "Évolution des heures travaillées par quintile de revenu (2009-2020)",
+    subtitle = "Données corrigées : exclut 'Not available' (-3) et limite aux années avec données",
+    x = "Année",
+    y = "Heures hebdomadaires moyennes",
+    color = "Quintile de revenu",
+    fill = "Quintile de revenu"
+  ) +
+  scale_x_continuous(breaks = seq(2009, 2020, 1)) +
+  scale_color_manual(values = c("Q1 (0-20%)" = "red",
+                               "Q2 (20-40%)" = "orange",
+                               "Q3 (40-60%)" = "green",
+                               "Q4 (60-80%)" = "blue",
+                               "Q5 (80-100%)" = "purple")) +
+  scale_fill_manual(values = c("Q1 (0-20%)" = "red",
+                              "Q2 (20-40%)" = "orange",
+                              "Q3 (40-60%)" = "green",
+                              "Q4 (60-80%)" = "blue",
+                              "Q5 (80-100%)" = "purple")) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    legend.position = "right",
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+
+
+```
+
+
+Comparaison des tendances (chiffées) entre les quintile de revenu :
+
+```{r}
+
+# Calculer les tendances linéaires par quintile
+trends_table <- data_hours_income_corrected %>%
+  group_by(income_quintile) %>%
+  do({
+    model <- lm(`Number of hours usually worked, main job` ~ `Year of survey`, data = .)
+    data.frame(
+      Intercept = coef(model)[1],
+      Slope = coef(model)[2],
+      R_squared = summary(model)$r.squared,
+      P_value = summary(model)$coefficients[2, 4],
+      N_obs = nrow(.),
+      Mean_hours = mean(.$`Number of hours usually worked, main job`, na.rm = TRUE),
+      Years_range = paste(min(.$`Year of survey`), "-", max(.$`Year of survey`))
+    )
+  }) %>%
+  ungroup() %>%
+  mutate(
+    Slope_per_decade = Slope * 10,  # Pente sur 10 ans
+    Direction = ifelse(Slope > 0, "↑ Augmentation", "↓ Diminution"),
+    Significance = ifelse(P_value < 0.001, "***",
+                         ifelse(P_value < 0.01, "**",
+                                ifelse(P_value < 0.05, "*", "Non significatif")))
+  ) %>%
+  arrange(income_quintile) %>%
+  select(
+    `Quintile revenu` = income_quintile,
+    `Pente (heures/an)` = Slope,
+    `Pente (heures/décennie)` = Slope_per_decade,
+    `Direction` = Direction,
+    `Significativité` = Significance,
+    `R²` = R_squared,
+    `Valeur p` = P_value,
+    `N observations` = N_obs,
+    `Heures moyennes` = Mean_hours,
+    `Période` = Years_range
+  )
+
+# Afficher le tableau
+print(trends_table, n = Inf)
+```
+
+
+```{r}
+# Version formatée pour présentation
+cat("\n=== TENDANCES DES HEURES TRAVAILLÉES PAR QUINTILE DE REVENU (2009-2020) ===\n\n")
+
+trends_formatted <- trends_table %>%
+  mutate(
+    `Tendance` = paste0(
+      ifelse(`Pente (heures/an)` > 0, "+", ""),
+      round(`Pente (heures/an)`, 3),
+      " h/an (",
+      ifelse(`Pente (heures/décennie)` > 0, "+", ""),
+      round(`Pente (heures/décennie)`, 2),
+      " h/décennie) ",
+      `Significativité`
+    ),
+    `R²` = round(`R²`, 4)
+  ) %>%
+  select(`Quintile revenu`, `Tendance`, `R²`, `Heures moyennes`, `N observations`)
+
+print(trends_formatted, n = Inf)
+```
+
+On observe une diminution bien plus forte dans le premier quintile (deux fois plus forte que dans la classe moyenne 3e quintile)
+
+
+
+
+
+ANALYSE PAR SEXE
+
+```{r}
+# Tableau
+sex_hours <- data_emp %>%
+  group_by(`Year of survey`, sex) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    median_hours = median(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(sex_label = ifelse(sex == 0, "Hommes", "Femmes"))
+
+print(sex_hours, n = Inf)
+```
+
+```{r}
+# Graphique
+ggplot(sex_hours, aes(x = `Year of survey`, y = mean_hours, color = sex_label)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "Évolution des heures travaillées par sexe",
+    subtitle = "Heures hebdomadaires moyennes",
+    x = "Année",
+    y = "Heures moyennes",
+    color = "Sexe"
+  ) +
+  scale_color_manual(values = c("Hommes" = "blue", "Femmes" = "red")) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+```
+
+ANALYSE PAR ÂGE
+
+```{r}
+# Créer groupes d'âge
+data_emp_age <- data_emp %>%
+  mutate(
+    age_group = case_when(
+      `Age in completed years` < 25 ~ "15-24 ans",
+      `Age in completed years` < 35 ~ "25-34 ans",
+      `Age in completed years` < 45 ~ "35-44 ans",
+      `Age in completed years` < 55 ~ "45-54 ans",
+      `Age in completed years` < 65 ~ "55-64 ans",
+      TRUE ~ "65+ ans"
+    ),
+    age_group = factor(age_group, levels = c("15-24 ans", "25-34 ans", "35-44 ans", 
+                                             "45-54 ans", "55-64 ans", "65+ ans"))
+  )
+
+# Tableau
+age_hours <- data_emp_age %>%
+  group_by(`Year of survey`, age_group) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )
+
+print(age_hours, n = 20)
+```
+
+
+```{r}
+# Calculer les moyennes par année et groupe d'âge
+age_hours <- data_emp_age %>%
+  group_by(`Year of survey`, age_group) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Graphique avec tous les groupes sur un seul graphique
+ggplot(age_hours, aes(x = `Year of survey`, y = mean_hours, color = age_group)) +
+  geom_line(linewidth = 1.8) +
+  labs(
+    title = "Heures travaillées par groupe d'âge",
+    x = "Année",
+    y = "Heures hebdomadaires moyennes",
+    color = "Âge"
+  ) +
+  scale_color_viridis_d(option = "plasma") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  ) +
+  guides(color = guide_legend(nrow = 1))
+```
+
+
+
+
+TEMPS PLEIN VS TEMPS PARTIEL
+
+```{r}
+# Tableau
+ftpt_hours <- data_emp %>%
+  filter(!is.na(`Full- or part-time, main job (self-defined)`)) %>%
+  group_by(`Year of survey`, `Full- or part-time, main job (self-defined)`) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )
+
+print(ftpt_hours, n = Inf)
+```
+
+```{r}
+# Graphique
+ggplot(ftpt_hours, aes(x = `Year of survey`, y = mean_hours)) +
+  geom_line(aes(color = `Full- or part-time, main job (self-defined)`), linewidth = 1.2) +
+  geom_point(aes(color = `Full- or part-time, main job (self-defined)`), size = 3) +
+  labs(
+    title = "Heures travaillées : Temps plein vs Temps partiel",
+    x = "Année",
+    y = "Heures moyennes",
+    color = "Type d'emploi"
+  ) +
+  scale_color_manual(values = c("Full-time job" = "darkgreen", "Part-time job" = "orange")) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+```
+C'est logique qu'il n'y a pas d'évolution étant donné que un individu travaillant moins "glissera"
+dans la catégorie de temps partiel, et inversement s'il travaille plus (selon l'article de la BCE)
+
+
+
+
+
+ÉVOLUTION DES INÉGALITÉS (GINI)
+
+```{r}
+# Fonction Gini
+calculate_gini <- function(x) {
+  x <- sort(na.omit(x))
+  n <- length(x)
+  if (n == 0) return(NA)
+  gini <- (2 * sum(x * 1:n) - (n + 1) * sum(x)) / (n * sum(x))
+  return(gini)
+}
+
+# Tableau
+inequality_hours <- data_emp %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    gini = calculate_gini(`Number of hours usually worked, main job`),
+    mean = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    sd = sd(`Number of hours usually worked, main job`, na.rm = TRUE),
+    cv = sd / mean,  # Coefficient de variation
+    n = n(),
+    .groups = "drop"
+  )
+
+print(inequality_hours, n = Inf)
+```
+
+```{r}
+# Graphique
+ggplot(inequality_hours, aes(x = `Year of survey`)) +
+  geom_line(aes(y = gini, color = "Gini"), linewidth = 1.5) +
+  geom_line(aes(y = cv, color = "CV"), linewidth = 1.5, linetype = "dashed") +
+  scale_y_continuous(
+    name = "Coefficient de Gini",
+    sec.axis = sec_axis(~., name = "Coefficient de variation")
+  ) +
+  labs(
+    title = "Évolution des inégalités d'heures travaillées",
+    subtitle = "Gini et coefficient de variation",
+    x = "Année",
+    color = "Mesure d'inégalité"
+  ) +
+  scale_color_manual(values = c("Gini" = "darkred", "CV" = "darkblue")) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+```
+
+TRAVAIL EXCESSIF (>48H)
+```{r}
+# Tableau
+overwork_analysis <- data_emp %>%
+  mutate(overwork = ifelse(`Number of hours usually worked, main job` > 48, 1, 0)) %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    prop_overwork = mean(overwork, na.rm = TRUE) * 100,
+    n_overwork = sum(overwork, na.rm = TRUE),
+    total = n(),
+    .groups = "drop"
+  )
+
+print(overwork_analysis, n = Inf)
+```
+
+```{r}
+# Graphique
+ggplot(overwork_analysis, aes(x = `Year of survey`, y = prop_overwork)) +
+  geom_line(color = "red", linewidth = 1.5) +
+  geom_point(color = "darkred", size = 3) +
+  geom_area(fill = "red", alpha = 0.2) +
+  labs(
+    title = "Évolution du travail excessif (>48h/semaine)",
+    subtitle = "Pourcentage de travailleurs",
+    x = "Année",
+    y = "% travaillant >48h"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+
+
+
+
+
+
+
+MÉTHODE D'AGRÉGATION DES SECTEURS ÉCONOMIQUES
+
+Problème : La classification NACE originale a 21 secteurs différents. C'est trop pour faire un graphique lisible, car 21 courbes seraient illisibles.
+
+Solution : Regrouper ces 21 secteurs en seulement 8 grands groupes :
+
+- Agriculture et extraction : Regroupe l'agriculture (A) et les mines/forêts (B). Ce sont les activités qui utilisent directement les ressources naturelles.
+
+- Industrie manufacturière : Regroupe les usines (C) avec la production d'énergie et d'eau (D, E). Toutes transforment des matières premières.
+
+- Construction : Gardé seul car c'est un secteur très particulier, très cyclique.
+
+- Commerce et transport : Regroupe les magasins (G), les transports (H), et les hôtels/restaurants (I). Tous font le lien entre producteurs et consommateurs.
+
+- Information et finance : Regroupe les technologies (J) et les banques (K). Ce sont des secteurs modernes à forte valeur ajoutée.
+
+- Services professionnels : Regroupe l'immobilier (L), les conseils (M), et les services aux entreprises (N). Ils vendent des compétences plutôt que des produits.
+
+- Services publics et sociaux : Regroupe l'administration (O), l'éducation (P), et la santé (Q). Ces secteurs sont souvent financés par l'État.
+
+- Autres services : Le reste (R à U) : arts, services personnels, etc.
+
+
+
+Cette simplification permet de voir clairement quels types d'économies ont les plus longues ou plus courtes heures de travail, et comment ça évolue dans le temps.
+
+
+
+Problème identifié et résolu :
+
+Les codes NACE sont numériques (1-21) et non des lettres (A-U)
+
+Il y a des codes spéciaux : -3 (Not available), -2 (Not applicable), -1 (Not stated)
+
+Beaucoup de -3 (437,454 observations) → probablement pour les années avant 2008
+
+```{r}
+
+# -----------------------------------------------------------
+# MÉTHODE D'AGRÉGATION :
+# -----------------------------------------------------------
+# Le code NACE Rev 2 à 1 chiffre (section) a 21 catégories (A à U).
+# Pour simplifier, je regroupe en 8 grands secteurs macro-économiques :
+# 1. Agriculture & industries extractives (A, B)
+# 2. Industrie manufacturière (C)
+# 3. Construction (F)
+# 4. Commerce & transport (G, H, I)
+# 5. Information & services financiers (J, K)
+# 6. Services professionnels & immobiliers (M, N, L)
+# 7. Services publics & sociaux (O, P, Q)
+# 8. Autres services (R, S, T, U)
+# -----------------------------------------------------------
+
+# -----------------------------------------------------------
+# Table de correspondance numérique -> secteurs agrégés
+# -----------------------------------------------------------
+nace_num_to_sector <- data.frame(
+  nace_num = c(-3, -2, -1, 1:21),
+  sector_name = c(
+    "Not available",           # -3
+    "Not applicable",          # -2
+    "Not stated",             # -1
+    "1. Agriculture & extraction",      # 1
+    "1. Agriculture & extraction",      # 2
+    "2. Industrie manufacturière",      # 3
+    "2. Industrie manufacturière",      # 4
+    "2. Industrie manufacturière",      # 5
+    "3. Construction",                  # 6
+    "4. Commerce & transport",          # 7
+    "4. Commerce & transport",          # 8
+    "4. Commerce & transport",          # 9
+    "5. Information & finance",         # 10
+    "5. Information & finance",         # 11
+    "6. Services professionnels",       # 12
+    "6. Services professionnels",       # 13
+    "6. Services professionnels",       # 14
+    "7. Services publics & sociaux",    # 15
+    "7. Services publics & sociaux",    # 16
+    "7. Services publics & sociaux",    # 17
+    "8. Autres services",               # 18
+    "8. Autres services",               # 19
+    "8. Autres services",               # 20
+    "8. Autres services"                # 21
+  ),
+  sector_order = c(0, 0, 0, 1, 1, 2, 2, 2, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 8)
+)
+
+# OPTION 1 : Inclure tous les codes (même les spéciaux)
+data_emp_sector_all <- data_emp %>%
+  mutate(nace_num = as.numeric(`Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)`)) %>%
+  left_join(nace_num_to_sector, by = "nace_num")
+
+# OPTION 2 : Filtrer seulement les vrais secteurs (1-21) et années >= 2008
+data_emp_sector_clean <- data_emp %>%
+  mutate(nace_num = as.numeric(`Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)`)) %>%
+  filter(nace_num >= 1 & nace_num <= 21) %>%  # Garder seulement les vrais secteurs
+  filter(`Year of survey` >= 2008) %>%        # Garder seulement après 2008
+  left_join(nace_num_to_sector, by = "nace_num")
+
+# Vérification
+cat("=== VÉRIFICATION DES DONNÉES ===\n")
+cat("Option 1 (tous) :", nrow(data_emp_sector_all), "observations\n")
+cat("Option 2 (nettoyé) :", nrow(data_emp_sector_clean), "observations\n")
+
+```
+
+```{r}
+# Utiliser l'option nettoyée pour l'analyse
+data_emp_sector <- data_emp_sector_clean
+
+# Tableau : heures moyennes par secteur et année
+sector_hours <- data_emp_sector %>%
+  group_by(`Year of survey`, sector_name) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(sector_name = factor(sector_name, 
+                             levels = c("1. Agriculture & extraction",
+                                       "2. Industrie manufacturière",
+                                       "3. Construction",
+                                       "4. Commerce & transport",
+                                       "5. Information & finance",
+                                       "6. Services professionnels",
+                                       "7. Services publics & sociaux",
+                                       "8. Autres services")))
+
+# Afficher le tableau
+cat("\n=== HEURES MOYENNES PAR SECTEUR ===\n")
+print(sector_hours %>% arrange(`Year of survey`, desc(mean_hours)), n = 20)
+
+```
+
+
+
+```{r}
+# Graphique 1 : Évolution par secteur
+if (nrow(sector_hours) > 0) {
+  ggplot(sector_hours, aes(x = `Year of survey`, y = mean_hours, color = sector_name)) +
+    geom_line(linewidth = 1.2) +
+    geom_point(size = 2) +
+    labs(
+      title = "Évolution des heures travaillées par secteur (2008+)",
+      subtitle = "Données NACE nettoyées (exclut codes spéciaux)",
+      x = "Année",
+      y = "Heures hebdomadaires moyennes",
+      color = "Secteur"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(face = "bold"),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+    )
+} else {
+  cat("ATTENTION : Pas assez de données pour le graphique\n")
+}
+```
+
+```{r}
+# Vérification supplémentaire
+cat("\n=== DISTRIBUTION PAR ANNÉE ===\n")
+year_check <- data_emp %>%
+  mutate(nace_num = as.numeric(`Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)`)) %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    total = n(),
+    n_clean = sum(nace_num >= 1 & nace_num <= 21, na.rm = TRUE),
+    prop_clean = n_clean / total,
+    .groups = "drop"
+  )
+
+print(year_check, n = Inf)
+```
+
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
