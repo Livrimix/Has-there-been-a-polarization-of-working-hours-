@@ -12,6 +12,8 @@ library(ISOweek)
 library(haven)
 library(dplyr)
 library(stringr)
+library(purrr)
+library(scales)
 
 
 # Mise en place des données ####
@@ -186,7 +188,6 @@ names(data_modifiable) <- labels
 
 name_vec <- names(data_modifiable)
 names(data_modifiable) <- make.unique(name_vec, sep = ".")
-
 
 
 # Liste des moms des variables et de leur type
