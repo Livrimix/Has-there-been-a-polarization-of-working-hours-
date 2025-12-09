@@ -1050,7 +1050,7 @@ age_hours <- data_emp_age %>%
   )
 
 # Graphique avec tous les groupes sur un seul graphique
-ggplot(age_hours, aes(x = `Year of survey`, y = mean_hours, color = age_group)) +
+p <- ggplot(age_hours, aes(x = `Year of survey`, y = mean_hours, color = age_group)) +
   geom_line(linewidth = 1.8) +
   labs(
     title = "Heures travaillées par groupe d'âge",
@@ -1066,6 +1066,71 @@ ggplot(age_hours, aes(x = `Year of survey`, y = mean_hours, color = age_group)) 
     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
   ) +
   guides(color = guide_legend(nrow = 1))
+
+ggsave("evolution_heures_travail-par-groupe-age.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+
+
+```
+```{r}
+
+# Calcul des tendances par groupe d'âge
+age_trends <- age_hours %>%
+  group_by(age_group) %>%
+  summarise(
+    `Période` = paste(min(`Year of survey`), "-", max(`Year of survey`)),
+    `Moyenne` = round(mean(mean_hours), 1),
+    `Tendance (h/an)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2], 3),
+    `Tendance (h/décennie)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2] * 10, 1),
+    `p-value` = round(summary(lm(mean_hours ~ `Year of survey`))$coefficients[2,4], 4),
+    `R²` = round(summary(lm(mean_hours ~ `Year of survey`))$r.squared, 4),
+    `Observations` = sum(n),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    `Significativité` = ifelse(`p-value` < 0.001, "***",
+                              ifelse(`p-value` < 0.01, "**",
+                                    ifelse(`p-value` < 0.05, "*", "NS")))
+  ) %>%
+  select(`Groupe d'âge` = age_group, Période, Moyenne, `Tendance (h/an)`, 
+         `Tendance (h/décennie)`, Significativité, `p-value`, `R²`, Observations)
+
+# Affichage dans la console
+print(age_trends)
+```
+
+
+```{r}
+# Création et sauvegarde du tableau en PNG
+
+age_table_grob <- tableGrob(age_trends, 
+                           rows = NULL,
+                           theme = ttheme_minimal(
+                             base_size = 10,
+                             padding = unit(c(4, 4), "mm"),
+                             core = list(
+                               fg_params = list(hjust = 0, x = 0.05),
+                               bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 3), "#f9f9f9"))
+                             ),
+                             colhead = list(
+                               bg_params = list(fill = "#2c7bb6", col = NA),
+                               fg_params = list(col = "white", fontface = "bold")
+                             )
+                           ))
+
+# Sauvegarde
+ggsave("tendances_heures_par_age_tableau.png", 
+       plot = age_table_grob, 
+       width = 12, 
+       height = 5, 
+       dpi = 300, 
+       bg = "white")
+
+
 ```
 
 
@@ -1138,7 +1203,7 @@ print(inequality_hours, n = Inf)
 
 ```{r}
 # Graphique
-ggplot(inequality_hours, aes(x = `Year of survey`)) +
+p_gini <- ggplot(inequality_hours, aes(x = `Year of survey`)) +
   geom_line(aes(y = gini, color = "Gini"), linewidth = 1.5) +
   geom_line(aes(y = cv, color = "CV"), linewidth = 1.5, linetype = "dashed") +
   scale_y_continuous(
@@ -1157,7 +1222,76 @@ ggplot(inequality_hours, aes(x = `Year of survey`)) +
     plot.title = element_text(face = "bold"),
     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
   )
+
+ggsave("evolution_inegalites_heures_gini.png", p_gini, width = 8, height = 5, dpi = 300, bg = "white")
 ```
+
+```{r}
+# Créer un tableau synthétique
+summary_table <- data.frame(
+  Indicateur = c("Gini moyen", "Gini 1983", "Gini 2022", "Évolution Gini", 
+                 "Tendance Gini (an)", "Significativité",
+                 "CV moyen", "CV 1983", "CV 2022", "Évolution CV",
+                 "Tendance CV (an)", "Significativité",
+                 "Corrélation Gini-CV"),
+  Valeur = c(
+    sprintf("%.4f", global_inequality$`Gini moyen`),
+    sprintf("%.4f", evolution_inequality$`Gini 1983`),
+    sprintf("%.4f", evolution_inequality$`Gini 2022`),
+    sprintf("%+.4f (%+.1f%%)", evolution_inequality$`Évolution Gini`, evolution_inequality$`Évolution Gini (%)`),
+    sprintf("%+.5f", trends_inequality$Tendance.annuelle[1]),
+    trends_inequality$Significativité[1],
+    sprintf("%.4f", global_inequality$`CV moyen`),
+    sprintf("%.4f", evolution_inequality$`CV 1983`),
+    sprintf("%.4f", evolution_inequality$`CV 2022`),
+    sprintf("%+.4f (%+.1f%%)", evolution_inequality$`Évolution CV`, evolution_inequality$`Évolution CV (%)`),
+    sprintf("%+.5f", trends_inequality$Tendance.annuelle[2]),
+    trends_inequality$Significativité[2],
+    sprintf("%.3f", global_inequality$`Corrélation Gini-CV`)
+  )
+)
+
+# Créer et sauvegarder le tableau
+table_grob <- tableGrob(summary_table, rows = NULL,
+                       theme = ttheme_minimal(
+                         base_size = 10,
+                         padding = unit(c(4, 4), "mm"),
+                         core = list(
+                           fg_params = list(hjust = 0, x = 0.05),
+                           bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 7), "#f9f9f9"))
+                         ),
+                         colhead = list(
+                           bg_params = list(fill = "#2c7bb6", col = NA),
+                           fg_params = list(col = "white", fontface = "bold")
+                         )
+                       ))
+
+# Ajouter un titre
+title <- textGrob("Synthèse des inégalités d'heures travaillées (1983-2022)",
+                  gp = gpar(fontsize = 12, fontface = "bold"),
+                  x = 0, hjust = 0)
+
+final_table <- arrangeGrob(title, table_grob, ncol = 1, heights = c(0.1, 0.9))
+
+ggsave("tableau_synthese_inegalites-gini.png", 
+       plot = final_table, 
+       width = 10, 
+       height = 6, 
+       dpi = 300, 
+       bg = "white")
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 TRAVAIL EXCESSIF (>48H)
 ```{r}
@@ -1173,11 +1307,13 @@ overwork_analysis <- data_emp %>%
   )
 
 print(overwork_analysis, n = Inf)
+
+
 ```
 
 ```{r}
 # Graphique
-ggplot(overwork_analysis, aes(x = `Year of survey`, y = prop_overwork)) +
+p_excessif <- ggplot(overwork_analysis, aes(x = `Year of survey`, y = prop_overwork)) +
   geom_line(color = "red", linewidth = 1.5) +
   geom_point(color = "darkred", size = 3) +
   geom_area(fill = "red", alpha = 0.2) +
@@ -1189,6 +1325,9 @@ ggplot(overwork_analysis, aes(x = `Year of survey`, y = prop_overwork)) +
   ) +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold"))
+
+ggsave("evolution_travail_excessif_sup48.png", p_excessif, width = 8, height = 5, dpi = 300, bg = "white")
+
 ```
 
 
@@ -1335,23 +1474,54 @@ print(sector_hours %>% arrange(`Year of survey`, desc(mean_hours)), n = 20)
 
 
 ```{r}
-# Graphique 1 : Évolution par secteur
+# Graphique 1 : Évolution par secteur avec palette cohérente
 if (nrow(sector_hours) > 0) {
-  ggplot(sector_hours, aes(x = `Year of survey`, y = mean_hours, color = sector_name)) +
+  
+  # Définir une palette cohérente pour les 8 secteurs
+  # Palette "Set3" de RColorBrewer (qualitative, 12 couleurs max, convient pour catégories)
+  library(RColorBrewer)
+  
+  # Créer le graphique
+  p_sectors <- ggplot(sector_hours, aes(x = `Year of survey`, y = mean_hours, color = sector_name)) +
     geom_line(linewidth = 1.2) +
-    geom_point(size = 2) +
+    geom_point(size = 2.5) +
+    scale_color_brewer(palette = "Set2", name = "Secteur économique") +
     labs(
-      title = "Évolution des heures travaillées par secteur (2008+)",
-      subtitle = "Données NACE nettoyées (exclut codes spéciaux)",
+      title = "Évolution des heures travaillées hebdomadaires par secteur (2008-2022)",
+      subtitle = "Données EU-LFS, classification NACE Rev 2 agrégée",
       x = "Année",
       y = "Heures hebdomadaires moyennes",
-      color = "Secteur"
+      caption = "Source: EU Labour Force Survey 2023\nNote: Exclut les codes spéciaux (-3, -2, -1) du champ NACE"
     ) +
-    theme_minimal() +
+    theme_minimal(base_size = 12) +
     theme(
-      plot.title = element_text(face = "bold"),
-      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+      plot.subtitle = element_text(size = 12, hjust = 0.5, margin = margin(b = 15)),
+      plot.caption = element_text(size = 9, color = "gray40", hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10),
+      axis.text.y = element_text(size = 10),
+      axis.title = element_text(size = 12, face = "bold"),
+      legend.title = element_text(face = "bold", size = 11),
+      legend.text = element_text(size = 10),
+      legend.position = "right",
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_line(color = "gray90", linewidth = 0.3),
+      plot.margin = margin(20, 20, 20, 20)
     )
+  
+  # Afficher le graphique
+  print(p_sectors)
+  
+  # Sauvegarder en haute qualité
+  ggsave("evolution_heures_par_secteur_2008_2022.png",
+         plot = p_sectors,
+         width = 10,
+         height = 6,
+         dpi = 300,
+         bg = "white")
+  
+  cat("Graphique sauvegardé sous : evolution_heures_par_secteur_2008_2022.png\n")
+  
 } else {
   cat("ATTENTION : Pas assez de données pour le graphique\n")
 }

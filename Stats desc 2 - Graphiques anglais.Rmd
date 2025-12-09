@@ -342,3 +342,290 @@ ggsave("EN-tendances_heures_par_sexe_tableau.png",
 print(sex_trends_table_en)
 ```
 
+
+
+
+
+
+Analyse par Age
+
+```{r}
+
+# Calculate means by year and age group
+age_hours <- data_emp_age %>%
+  group_by(`Year of survey`, age_group) %>%
+  summarise(
+    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Graph with all groups on a single plot
+p <- ggplot(age_hours, aes(x = `Year of survey`, y = mean_hours, color = age_group)) +
+  geom_line(linewidth = 1.8) +
+  labs(
+    title = "Working Hours by Age Group",
+    x = "Year",
+    y = "Average weekly hours",
+    color = "Age"
+  ) +
+    scale_color_viridis_d(
+    option = "plasma",
+    labels = c("15-24 years", "25-34 years", "35-44 years", 
+               "45-54 years", "55-64 years", "65+ years")
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  ) +
+  guides(color = guide_legend(nrow = 1))
+
+ggsave("EN-evolution_heures_travail-par-groupe-age.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+
+```
+
+
+```{r}
+
+# Calculate trends by age group (with English labels)
+age_trends_en <- age_hours %>%
+  # Convert French age group labels to English
+  mutate(age_group_en = case_when(
+    age_group == "15-24 ans" ~ "15-24 years",
+    age_group == "25-34 ans" ~ "25-34 years",
+    age_group == "35-44 ans" ~ "35-44 years",
+    age_group == "45-54 ans" ~ "45-54 years",
+    age_group == "55-64 ans" ~ "55-64 years",
+    age_group == "65+ ans" ~ "65+ years"
+  )) %>%
+  group_by(age_group_en) %>%
+  summarise(
+    `Period` = paste(min(`Year of survey`), "-", max(`Year of survey`)),
+    `Average` = round(mean(mean_hours), 1),
+    `Trend (h/year)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2], 3),
+    `Trend (h/decade)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2] * 10, 1),
+    `p-value` = round(summary(lm(mean_hours ~ `Year of survey`))$coefficients[2,4], 4),
+    `R²` = round(summary(lm(mean_hours ~ `Year of survey`))$r.squared, 4),
+    `Observations` = sum(n),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    `Significance` = ifelse(`p-value` < 0.001, "***",
+                           ifelse(`p-value` < 0.01, "**",
+                                 ifelse(`p-value` < 0.05, "*", "NS")))
+  ) %>%
+  select(`Age group` = age_group_en, Period, Average, `Trend (h/year)`, 
+         `Trend (h/decade)`, Significance, `p-value`, `R²`, Observations)
+
+# Display in console
+print(age_trends_en)
+
+# Create and save table as PNG
+
+age_table_grob_en <- tableGrob(age_trends_en, 
+                           rows = NULL,
+                           theme = ttheme_minimal(
+                             base_size = 10,
+                             padding = unit(c(4, 4), "mm"),
+                             core = list(
+                               fg_params = list(hjust = 0, x = 0.05),
+                               bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 3), "#f9f9f9"))
+                             ),
+                             colhead = list(
+                               bg_params = list(fill = "#2c7bb6", col = NA),
+                               fg_params = list(col = "white", fontface = "bold")
+                             )
+                           ))
+
+# Save
+ggsave("EN-tendances_heures_par_age_tableau.png", 
+       plot = age_table_grob_en, 
+       width = 12, 
+       height = 5, 
+       dpi = 300, 
+       bg = "white")
+```
+
+
+
+
+
+
+Evolution du coefficient de gini des inegalités des heures de travail
+
+```{r}
+
+p_gini_en <- ggplot(inequality_hours, aes(x = `Year of survey`)) +
+  geom_line(aes(y = gini, color = "Gini"), linewidth = 1.5) +
+  geom_line(aes(y = cv, color = "CV"), linewidth = 1.5, linetype = "dashed") +
+  scale_y_continuous(
+    name = "Gini coefficient",
+    sec.axis = sec_axis(~., name = "Coefficient of variation")
+  ) +
+  labs(
+    title = "Evolution of Working Hours Inequality",
+    subtitle = "Gini and coefficient of variation",
+    x = "Year",
+    color = "Inequality measure"
+  ) +
+  scale_color_manual(values = c("Gini" = "darkred", "CV" = "darkblue")) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+
+ggsave("EN-evolution_inegalites_heures_gini.png", p_gini_en, width = 8, height = 5, dpi = 300, bg = "white")
+
+```
+
+```{r}
+# Create a summary table
+summary_table_en <- data.frame(
+  Indicator = c("Average Gini", "Gini 1983", "Gini 2022", "Gini change", 
+                 "Gini trend (year)", "Significance",
+                 "Average CV", "CV 1983", "CV 2022", "CV change",
+                 "CV trend (year)", "Significance",
+                 "Gini-CV correlation"),
+  Value = c(
+    sprintf("%.4f", global_inequality$`Gini moyen`),
+    sprintf("%.4f", evolution_inequality$`Gini 1983`),
+    sprintf("%.4f", evolution_inequality$`Gini 2022`),
+    sprintf("%+.4f (%+.1f%%)", evolution_inequality$`Évolution Gini`, evolution_inequality$`Évolution Gini (%)`),
+    sprintf("%+.5f", trends_inequality$Tendance.annuelle[1]),
+    trends_inequality$Significativité[1],
+    sprintf("%.4f", global_inequality$`CV moyen`),
+    sprintf("%.4f", evolution_inequality$`CV 1983`),
+    sprintf("%.4f", evolution_inequality$`CV 2022`),
+    sprintf("%+.4f (%+.1f%%)", evolution_inequality$`Évolution CV`, evolution_inequality$`Évolution CV (%)`),
+    sprintf("%+.5f", trends_inequality$Tendance.annuelle[2]),
+    trends_inequality$Significativité[2],
+    sprintf("%.3f", global_inequality$`Corrélation Gini-CV`)
+  )
+)
+
+# Create and save the table
+table_grob_en <- tableGrob(summary_table_en, rows = NULL,
+                       theme = ttheme_minimal(
+                         base_size = 10,
+                         padding = unit(c(4, 4), "mm"),
+                         core = list(
+                           fg_params = list(hjust = 0, x = 0.05),
+                           bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 7), "#f9f9f9"))
+                         ),
+                         colhead = list(
+                           bg_params = list(fill = "#2c7bb6", col = NA),
+                           fg_params = list(col = "white", fontface = "bold")
+                         )
+                       ))
+
+# Add a title
+title_en <- textGrob("Summary of Working Hours Inequality (1983-2022)",
+                  gp = gpar(fontsize = 12, fontface = "bold"),
+                  x = 0, hjust = 0)
+
+final_table_en <- arrangeGrob(title_en, table_grob_en, ncol = 1, heights = c(0.1, 0.9))
+
+ggsave("EN-tableau_synthese_inegalites-gini.png", 
+       plot = final_table_en, 
+       width = 10, 
+       height = 6, 
+       dpi = 300, 
+       bg = "white")
+
+
+```
+
+
+
+
+
+TRAVAIL EXCESSIF (>48H)
+```{r}
+
+p_excessif_EN <- ggplot(overwork_analysis, aes(x = `Year of survey`, y = prop_overwork)) +
+  geom_line(color = "red", linewidth = 1.5) +
+  geom_point(color = "darkred", size = 3) +
+  geom_area(fill = "red", alpha = 0.2) +
+  labs(
+    title = "Evolution of Excessive Work (>48 hours/week)",
+    subtitle = "Percentage of workers",
+    x = "Year",
+    y = "% working >48h"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+
+ggsave("EN-evolution_travail_excessif_sup48.png", p_excessif_EN, width = 8, height = 5, dpi = 300, bg = "white")
+```
+
+
+
+
+
+
+
+MÉTHODE D'AGRÉGATION DES SECTEURS ÉCONOMIQUES
+
+```{r}
+# Graph 1: Sector evolution with consistent color palette
+if (nrow(sector_hours) > 0) {
+  
+  # Define a consistent color palette for the 8 sectors
+  # RColorBrewer "Set2" palette (qualitative, max 12 colors, suitable for categories)
+  library(RColorBrewer)
+  
+  # Create the graph
+  p_sectors <- ggplot(sector_hours, aes(x = `Year of survey`, y = mean_hours, color = sector_name)) +
+    geom_line(linewidth = 1.2) +
+    geom_point(size = 2.5) +
+    scale_color_brewer(palette = "Set2", name = "Economic sector") +
+    labs(
+      title = "Evolution of Weekly Working Hours by Sector (2008-2022)",
+      subtitle = "EU-LFS data, aggregated NACE Rev 2 classification",
+      x = "Year",
+      y = "Average weekly hours",
+      caption = "Source: EU Labour Force Survey 2023\nNote: Excludes special codes (-3, -2, -1) from NACE field"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+      plot.subtitle = element_text(size = 12, hjust = 0.5, margin = margin(b = 15)),
+      plot.caption = element_text(size = 9, color = "gray40", hjust = 1),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10),
+      axis.text.y = element_text(size = 10),
+      axis.title = element_text(size = 12, face = "bold"),
+      legend.title = element_text(face = "bold", size = 11),
+      legend.text = element_text(size = 10),
+      legend.position = "right",
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_line(color = "gray90", linewidth = 0.3),
+      plot.margin = margin(20, 20, 20, 20)
+    )
+  
+  # Display the graph
+  print(p_sectors)
+  
+  # Save in high quality
+  ggsave("EN-evolution_heures_par_secteur_2008_2022.png",
+         plot = p_sectors,
+         width = 10,
+         height = 6,
+         dpi = 300,
+         bg = "white")
+  
+  cat("Graph saved as: EN-evolution_heures_par_secteur_2008_2022.png\n")
+  
+} else {
+  cat("WARNING: Insufficient data for graph\n")
+}
+
+```
+
