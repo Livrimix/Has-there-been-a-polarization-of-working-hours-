@@ -1,0 +1,359 @@
+Variable,Type,Codes,Labels
+Data Release,character,N/A,Continuous/too many values
+Year of survey,numeric,1983; 1984; 1985; 1986; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009; 2010; 2011; 2012; 2013; 2014; 2015; 2016; 2017; 2018; 2019; 2020; 2021; 2022,1983; 1984; 1985; 1986; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009; 2010; 2011; 2012; 2013; 2014; 2015; 2016; 2017; 2018; 2019; 2020; 2021; 2022
+Fixed reference year,numeric,1983; 1984; 1985; 1986; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009; 2010; 2011; 2012; 2013; 2014; 2015; 2016; 2017; 2018; 2019; 2020; 2021; 2022,1983; 1984; 1985; 1986; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009; 2010; 2011; 2012; 2013; 2014; 2015; 2016; 2017; 2018; 2019; 2020; 2021; 2022
+Fixed reference quarter,character,N/A,Continuous/too many values
+Reference week,numeric,N/A,Continuous/too many values
+Reference month,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12,Not available; January; February; March; April; May; June; July; August; September; October; November; December
+Interview week,haven_labelled,N/A,Continuous/too many values
+Living in private household or institution,factor,0; 1; 2; 3; 4,Not available; Person surveyed and living in the same private household; Person surveyed in the private household but living in an institution; Person surveyed in the private household but living in another private household; 4
+Serial number of household,numeric,N/A,Continuous/too many values
+Serial number of household in each quarter,character,N/A,Continuous/too many values
+Sequence number in the household,haven_labelled,N/A,Continuous/too many values
+Yearly weighting factor,numeric,N/A,Continuous/too many values
+"Yearly weighting factor, module",numeric,N/A,Continuous/too many values
+"Yearly weighting factor, individuals",numeric,N/A,Continuous/too many values
+"Yearly weighting factor, households",numeric,N/A,Continuous/too many values
+"Weighting factor, two-yearly variables",numeric,N/A,Continuous/too many values
+Sequence number of survey wave,haven_labelled,-3; 1; 2; 3; 4; 5; 6; 7; 8,-3; 1; 2; 3; 4; 5; 6; 7; 8
+Questionnaire used,haven_labelled,2; 3; 4; 5; 7; 8; 9; 10; 12,2; 3; 4; 5; 7; 8; 9; 10; 12
+Interview mode,haven_labelled,-3; -1; 1; 2; 3; 4; 5; 6,-3; -1; 1; 2; 3; 4; 5; 6
+Nature of participation in the survey,haven_labelled,-3; -1; 1; 2,-3; -1; 1; 2
+Country of residence,haven_labelled,1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 23; 24; 25; 26; 27; 28; 29; 30; 31,1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 23; 24; 25; 26; 27; 28; 29; 30; 31
+Region of residence (NUTS II),character,N/A,Continuous/too many values
+Degree of urbanisation,haven_labelled,-3; 1; 2; 3,-3; 1; 2; 3
+No label,numeric,0; 1,0; 1
+Age in completed years,haven_labelled,N/A,Continuous/too many values
+Age group,haven_labelled,2; 7; 12; 17; 22; 27; 32; 37; 42; 47; 52; 57; 62; 67; 72; 75; 77; 80; 82; 85; 87; 90; 92; 97; 100,2; 7; 12; 17; 22; 27; 32; 37; 42; 47; 52; 57; 62; 67; 72; 75; 77; 80; 82; 85; 87; 90; 92; 97; 100
+Country of main citizenship,haven_labelled,-3; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27,-3; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27
+Country of birth,haven_labelled,-3; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27,-3; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27
+Country of birth of father,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27,-3; -2; -1; 1; 2; 3; 4; 5; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27
+Country of birth of mother,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27,-3; -2; -1; 1; 2; 3; 4; 5; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27
+Main reason for migrating,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7
+Duration of stay in country of residence,haven_labelled,-3; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 12; 17; 22; 27; 32; 37; 42; 47; 52; 57; 62; 67; 72; 75; 77; 82; 87; 92; 888; 999,-3; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 12; 17; 22; 27; 32; 37; 42; 47; 52; 57; 62; 67; 72; 75; 77; 82; 87; 92; 888; 999
+Age at which person last established their usual residence in the country,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24,Not available; Not stated; Born in the country (or arrived at age less than 1); 1-4 years of age; 5-9 years of age; 10-14 years of age; 15-19 years of age; 20-24 years of age; 25-29 years of age; 30-34 years of age; 35-39 years of age; 40-44 years of age; 45-49 years of age; 50-54 years of age; 55-59 years of age; 60-64 years of age; 65-69 years of age; 70-74 years of age; 75 years of age and older; 75-79 years of age; 80-84 years of age; 85-89 years of age; 90-94 years of age; 95-99 years of age; 100 years of age and older
+Country of previous residence,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27,-3; -2; -1; 1; 2; 3; 4; 5; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27
+Relationship to reference person in the household,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15,Not available; Not applicable; Not stated; Reference person; Partner of reference person; Son/daughter of reference person; Son/daughter-in-law of reference person; Grandchild of reference person; Parent of reference person; Parent-in-law of reference person; Grandparent of reference person; Brother/sister of reference person; Other relative; Other non-relative; Ascendant relative of reference person (pre-IESS code); Other relative (pre-IESS code)
+Sequence number of partner,haven_labelled,N/A,Continuous/too many values
+Sequence number of father,haven_labelled,N/A,Continuous/too many values
+Sequence number of mother,haven_labelled,N/A,Continuous/too many values
+Working in the reference week,haven_labelled,-2; 1; 2; 3; 4,-2; 1; 2; 3; 4
+Main reason for absence from work in reference week,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,Not available; Not applicable; Not stated; Holidays; Working time arrangements or compensation of overtime; Sick leave; Maternity or paternity leave; Job-related training; Parental leave; Off-season; Other reason; Having a job not started yet
+Job attachment,haven_labelled,-3; -2; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; 1; 2; 3; 4; 5; 6; 7; 8
+Being in employment,factor,0; 1; 2; 3,Not available; Not applicable; Employed; Not employed
+Number of jobs,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+"Searching for employment, last 4 weeks",factor,0; 1; 2; 3; 4; 5; 6,"Not available; Not applicable; Person is searching for employment; Person is not searching for employment, has already found a job which will start within 3 months; Person is not searching for employment, has already found a job which will start in more than 3 months; Person is not searching for employment, has already found a job which started between end of reference week and interview date; Person is not searching for employment and has not found any job to start later"
+Willingness to work even if not searching for employment,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Main reason for not searching for employment,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Main reason for not wanting to work,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7
+Having used active search method to find a job,factor,0; 1; 2; 3; 4,Not available; Not applicable; Used active search method to find work; Did not use active search method to find work; Other method used (pre-IESS code)
+Wish to work more than current number of hours,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Availability to start working within 2 weeks,haven_labelled,-2; 1; 2,-2; 1; 2
+Main reason for not being available to start working within 2 weeks,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9,"Not available; Not applicable; Not stated; Education or training; Own illness or disability; Care responsibilities; Other family reasons; Other personal reasons; Other reasons; Personal or family responsibilities, including maternity (pre-IESS code)"
+ILO employment status,factor,0; 1; 2; 3,Not available; Employed; Unemployed; Outside the labour force
+"Country of place of work, main job",haven_labelled,N/A,Continuous/too many values
+"Region of place of work, main job (NUTS II)",character,N/A,Continuous/too many values
+"Working at home, main job",factor,0; 1; 2; 3; 4; 5,Not available; Not applicable; Not stated; Person mainly works at home; Person sometimes works at home; Person never works at home
+"Status in employment, main job",factor,0; 1; 2; 3; 4; 5,Not available; Not applicable; Not stated; Self-employed with or without employees; Employee; Family worker (unpaid)
+"Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21
+"Occupation, main job, 2011 onwards (ISCO-08, 3 digits)",factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28; 29; 30; 31; 32; 33; 34; 35; 36; 37; 38; 39; 40; 41; 42; 43; 44; 45; 46; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90; 91; 92; 93; 94; 95; 96; 97; 98; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122; 123; 124; 125; 126; 127; 128; 129; 130; 131; 132; 133; 134; 135; 136; 137; 138; 139; 140; 141; 142; 143; 144; 145; 146; 147; 148; 149; 150; 151; 152; 153; 154; 155; 156; 157; 158; 159; 160; 161; 162; 163; 164; 165; 166; 167; 168; 169; 170; 171; 172; 173; 174; 175; 176; 177,"Not available; Not applicable; Not stated; ARMED FORCES OCCUPATIONS; Commissioned armed forces officers; Non-commissioned armed forces officers; Armed forces occupations, other ranks; MANAGERS; Chief executives, senior officials and legislators; Legislators and senior officials; Managing directors and chief executives; Administrative and commercial managers; Business services and administration managers; Sales, marketing and development managers; Production and specialised services managers; Production managers in agriculture, forestry and fisheries; Manufacturing, mining, construction, and distribution managers; Information and communications technology service managers; Professional services managers; Hospitality, retail and other services managers; Hotel and restaurant managers; Retail and wholesale trade managers; Other services managers; PROFESSIONALS; Science and engineering professionals; Physical and earth science professionals; Mathematicians, actuaries and statisticians; Life science professionals; Engineering professionals (excluding electrotechnology); Electrotechnology engineers; Architects, planners, surveyors and designers; Health professionals; Medical doctors; Nursing and midwifery professionals; Traditional and complementary medicine professionals; Paramedical practitioners; Veterinarians; Other health professionals; Teaching professionals; University and higher education teachers; Vocational education teachers; Secondary education teachers; Primary school and early childhood teachers; Other teaching professionals; Business and administration professionals; Finance professionals; Administration professionals; Sales, marketing and public relations professionals; Information and communications technology professionals; Software and applications developers and analysts; Database and network professionals; Legal, social and cultural professionals; Legal professionals; Librarians, archivists and curators; Social and religious professionals; Authors, journalists and linguists; Creative and performing artists; TECHNICIANS AND ASSOCIATE PROFESSIONALS; Science and engineering associate professionals; Physical and engineering science technicians; Mining, manufacturing and construction supervisors; Process control technicians; Life science technicians and related associate professionals; Ship and aircraft controllers and technicians; Health associate professionals; Medical and pharmaceutical technicians; Nursing and midwifery associate professionals; Traditional and complementary medicine associate professionals; Veterinary technicians and assistants; Other health associate professionals; Business and administration associate professionals; Financial and mathematical associate professionals; Sales and purchasing agents and brokers; Business services agents; Administrative and specialised secretaries; Regulatory government associate professionals; Legal, social, cultural and related associate professionals; Legal, social and religious associate professionals; Sports and fitness workers; Artistic, cultural and culinary associate professionals; Information and communications technicians; Information and communications technology operations and user support technicians; Telecommunications and broadcasting technicians; CLERICAL SUPPORT WORKERS; General and keyboard clerks; General office clerks; Secretaries (general); Keyboard operators; Customer services clerks; Tellers, money collectors and related clerks; Client information workers; Numerical and material recording clerks; Numerical clerks; Material-recording and transport clerks; Other clerical support workers; SERVICE AND SALES WORKERS; Personal service workers; Travel attendants, conductors and guides; Cooks; Waiters and bartenders; Hairdressers, beauticians and related workers; Building and housekeeping supervisors; Other personal services workers; Sales workers; Street and market salespersons; Shop salespersons; Cashiers and ticket clerks; Other sales workers; Personal care workers; Child care workers and teachers' aides; Personal care workers in health services; Protective services workers; SKILLED AGRICULTURAL, FORESTRY AND FISHERY WORKERS; Market-oriented skilled agricultural workers; Market gardeners and crop growers; Animal producers; Mixed crop and animal producers; Market-oriented skilled forestry, fishery and hunting workers; Forestry and related workers; Fishery workers, hunters and trappers; Subsistence farmers, fishers, hunters and gatherers; Subsistence crop farmers; Subsistence livestock farmers; Subsistence mixed crop and livestock farmers; Subsistence fishers, hunters, trappers and gatherers; CRAFT AND RELATED TRADES WORKERS; Building and related trades workers, excluding electricians; Building frame and related trades workers; Building finishers and related trades workers; Painters, building structure cleaners and related trades workers; Metal, machinery and related trades workers; Sheet and structural metal workers, moulders and welders, and related workers; Blacksmiths, toolmakers and related trades workers; Machinery mechanics and repairers; Handicraft and printing workers; Handicraft workers; Printing trades workers; Electrical and electronic trades workers; Electrical equipment installers and repairers; Electronics and telecommunications installers and repairers; Food processing, wood working, garment and other craft and related trades workers; Food processing and related trades workers; Wood treaters, cabinet-makers and related trades workers; Garment and related trades workers; Other craft and related workers; PLANT AND MACHINE OPERATORS AND ASSEMBLERS; Stationary plant and machine operators; Mining and mineral processing plant operators; Metal processing and finishing plant operators; Chemical and photographic products plant and machine operators; Rubber, plastic and paper products machine operators; Textile, fur and leather products machine operators; Food and related products machine operators; Wood processing and papermaking plant operators; Other stationary plant and machine operators; Assemblers; Drivers and mobile plant operators; Locomotive engine drivers and related workers; Car, van and motorcycle drivers; Heavy truck and bus drivers; Mobile plant operators; Ships' deck crews and related workers; ELEMENTARY OCCUPATIONS; Cleaners and helpers; Domestic, hotel and office cleaners and helpers; Vehicle, window, laundry and other hand cleaning workers; Agricultural, forestry and fishery labourers; Labourers in mining, construction, manufacturing and transport; Mining and construction labourers; Manufacturing labourers; Transport and storage labourers; Food preparation assistants; Street and related sales and service workers; Street and related service workers; Street vendors (excluding food); Refuse workers and other elementary workers; Refuse workers; Other elementary workers"
+"Occupation, main job, 2011 onwards (ISCO-08, 1 digit)",haven_labelled,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90
+"European Socio-economic Group (ESeG, 2 digits)",factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28; 29; 30; 31; 32; 33; 34; 35; 36; 37; 38; 39; 40; 41; 42; 43; 44; 45; 46; 47; 48; 49; 50; 51; 52,"Not available; No answer; Employed persons whose occupation or status in employment is not known; Unemployed persons whose previous occupation or status in employment is not known or who never had a job; Managers - not further specified; Higher managerial self-employed; Lower managerial self-employed; Higher managerial employees; Lower managerial employees; Professionals - not further specified; Science, engineering and information and communications technology (ICT) professionals; Health professionals; Business and administration professionals; Legal, social and cultural professionals; Teaching professionals; Technicians and associate professional employees - not further specified; Science and engineering associate professionals and ICT technicians; Health associate professionals; Business and administration associate professionals; Legal, social and cultural associate professionals; Non-commissioned armed forces officers; Small entrepreneurs - not further specified; Self-employed agricultural and related workers; Self-employed technicians, clerical support, services and sales workers; Self-employed drivers, craft, trades and elementary workers; Clerks and skilled service employees  - not further specified; General and numerical clerks and other clerical support employees; Customer services clerks; Personal care employees; Protective service employees and armed forces, other ranks; Skilled industrial employees  - not further specified; Building and related trade employees; Food processing, wood working, garment employees; Metal, machinery, handicraft, printing, electrical and electronic trade employees; Stationary plant and machinery operation and assembly employees; Employee drivers and mobile plant operators; Lower status employees - not further specified; Personal services and sales employees; Industrial labourers and food preparation assistants; Cleaners and helpers and services employees in elementary occupations; Agricultural employees; Retired persons - not further specified; Retired managers; Retired professionals; Retired technicians and associated professionals employees; Retired small entrepreneurs; Retired clerks and skilled service employees; Retired skilled Industrial employees; Retired lower status employees; Other persons outside the Labour Force - not further specified; Students; Permanently disabled persons not retired; Other persons outside the labour force not elsewhere classified"
+"European Socio-economic Group (ESeG, 1 digit)",haven_labelled,-3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9,-3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9
+"Full- or part-time, main job (self-defined)",factor,0; 1; 2; 3; 4,Not available; Not applicable; Not stated; Full-time job; Part-time job
+Permanency of main job,factor,0; 1; 2; 3; 4,Not available; Not applicable; Not stated; Permanent job; Fixed-term job
+Total duration of temporary main job,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10,Not available; Not applicable; Not stated; Less than 1 month; From 1 to less than 3 months; From 3 to less than 6 months; From 6 to less than 12 months; From 12 to less than 18 months; From 18 to less than 24 months; From 24 to less than 36 months; 36 months or over
+Main reason for having a temporary main job,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10,"Not available; Not applicable; Not stated; Could not find a permanent job; Did not want a permanent job; Fixed-term probationary contract; Apprenticeship; Training other than apprenticeship (trainees, internships, research assistants, etc.); This type of job is only available with a temporary contract; Other reasons; Contract covering a period of training or apprenticeship (pre-IESS code)"
+"Contract with a temporary employment agency, main job",factor,0; 1; 2; 3; 4,Not available; Not applicable; Not stated; No; Yes
+"Main reason for part-time work, main job",factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10,"Not available; Not applicable; Not stated; Education or training; Own illness or disability; Care responsibilities; Other family reasons; Other personal reasons; Could not find a full-time job; Other reasons; Other family or personal reasons (pre-IESS code, from 2006)"
+"Number and importance of clients, last 12 months",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Decision on start and end of working time,factor,0; 1; 2; 3; 4; 5; 6,"Not available; Not applicable; Not stated; Worker can fully decide him/herself; Worker can decide under flexible working time arrangements; Employer, organisation, or client(s) decides; Any other party decides"
+"Supervisory responsibilities, main job",haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+"Size of local unit, main job",haven_labelled,-3; -2; -1; 1; 10; 11; 12; 13; 14; 15; 23; 24; 25,-3; -2; -1; 1; 10; 11; 12; 13; 14; 15; 23; 24; 25
+Looking for another job,factor,0; 1; 2; 3; 4,Not available; Not applicable; Not stated; Person is not looking for another job; Person is looking for another job
+Number of hours wished to work,factor,0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28; 29; 30; 31; 32; 33; 34; 35; 36; 37; 38; 39; 40; 41; 42; 43; 44; 45; 46; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 81; 82; 83,Not available; Not applicable; Not stated; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28; 29; 30; 31; 32; 33; 34; 35; 36; 37; 38; 39; 40; 41; 42; 43; 44; 45; 46; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80 hours or more
+Duration of search for employment,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Main reason why care limits labour market participation,factor,0; 1; 2; 3; 4; 5; 6; 7,Not available; Not applicable; Not stated; Relevant care services not available; Relevant care services not affordable; Want to provide care themselves; Other factors were decisive; Care facilities do not influence decision (pre-IESS code)
+"Status in employment, 2nd job",haven_labelled,-3; -2; -1; 0; 3; 4,-3; -2; -1; 0; 3; 4
+"Economic activity, 2nd job, 2008 onwards (NACE Rev 2, 1 digit)",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21
+Main activity status (self-defined),haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Highest level of education,haven_labelled,-3; -2; -1; 0; 100; 200; 342; 343; 344; 349; 352; 353; 354; 359; 392; 393; 394; 399; 440; 450; 490; 500; 540; 550; 590; 600; 700; 800; 900,-3; -2; -1; 0; 100; 200; 342; 343; 344; 349; 352; 353; 354; 359; 392; 393; 394; 399; 440; 450; 490; 500; 540; 550; 590; 600; 700; 800; 900
+"Highest level of education (ISCED-11, 3 levels)",haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Field of highest level of education,haven_labelled,N/A,Continuous/too many values
+Year when highest level of education was attained,haven_labelled,N/A,Continuous/too many values
+Work experience at a workplace as part of HATLEVEL,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+"Year in which person started working, main job",haven_labelled,N/A,Continuous/too many values
+"Month in which person started working, main job",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12
+Time since person started to work (in months),haven_labelled,N/A,Continuous/too many values
+Public employment service helped to find main job,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Most effective method used to find main job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Existence of previous employment experience,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Year in which person last worked,haven_labelled,N/A,Continuous/too many values
+Month in which person last worked,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12
+Time since person last worked (in months),haven_labelled,N/A,Continuous/too many values
+Time since person last worked (in months classes),haven_labelled,-5; -3; 1; 2; 3; 4; 5; 6; 7; 8,-5; -3; 1; 2; 3; 4; 5; 6; 7; 8
+Duration of unemployment,haven_labelled,-5; -3; -2; 1; 2; 3; 4,-5; -3; -2; 1; 2; 3; 4
+Main reason for leaving last job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10
+"Status in employment, last job",haven_labelled,-3; -2; -1; 0; 3; 4,-3; -2; -1; 0; 3; 4
+"Economic activity, last job, 2008 onwards (NACE Rev 2, 1 digit)",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21
+"Occupation, last job, 2011 onwards (ISCO-08, 3 digits)",haven_labelled,N/A,Continuous/too many values
+"Occupation, last job, 2011 onwards (ISCO-08, 1 digit)",haven_labelled,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90
+"Contractual working hours, main job",haven_labelled,N/A,Continuous/too many values
+"Number of hours usually worked, main job",haven_labelled,N/A,Continuous/too many values
+"Days of absence due to holidays and leave, main job",haven_labelled,-3; -2; -1; 0; 0.5; 1; 1.5; 2; 2.5; 3; 3.5; 4; 4.5; 5; 5.5; 6; 6.5; 7,-3; -2; -1; 0; 0.5; 1; 1.5; 2; 2.5; 3; 3.5; 4; 4.5; 5; 5.5; 6; 6.5; 7
+"Days of absence due to illness, injury or temporary disability, main job",haven_labelled,-3; -2; -1; 0; 0.5; 1; 1.5; 2; 2.5; 3; 3.5; 4; 4.5; 5; 5.5; 6; 7,-3; -2; -1; 0; 0.5; 1; 1.5; 2; 2.5; 3; 3.5; 4; 4.5; 5; 5.5; 6; 7
+"Days of absence due to other reasons, main job",haven_labelled,-3; -2; -1; 0; 0.5; 1; 1.5; 2; 2.5; 3; 3.5; 4; 4.5; 5; 5.5; 6; 6.5; 7,-3; -2; -1; 0; 0.5; 1; 1.5; 2; 2.5; 3; 3.5; 4; 4.5; 5; 5.5; 6; 6.5; 7
+"Overtime or extra hours worked, main job",haven_labelled,N/A,Continuous/too many values
+"Number of hours actually worked, main job",haven_labelled,N/A,Continuous/too many values
+"Number of hours usually worked, 2nd job",haven_labelled,N/A,Continuous/too many values
+"Number of hours actually worked, 2nd job",haven_labelled,N/A,Continuous/too many values
+"Shift work, main job",haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+"Evening work, main job",haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+"Night work, main job",haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+"Saturday work, main job",haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+"Sunday work, main job",haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+"Participation in formal education and training, last 4 weeks",haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+"Level of most recent formal education or training, last 4 weeks",haven_labelled,-3; -2; -1; 10; 20; 34; 35; 39; 44; 45; 49; 50; 54; 55; 59; 60; 70; 80; 90,-3; -2; -1; 10; 20; 34; 35; 39; 44; 45; 49; 50; 54; 55; 59; 60; 70; 80; 90
+"Participation in non-formal education and training, last 4 weeks",haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+"Education or training received, last 4 weeks",haven_labelled,-3; -2; -1; 0; 1,-3; -2; -1; 0; 1
+"Participation in formal education and training, last 12 months",haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+"Level of the most recent formal education or training, last 12 months",haven_labelled,-3; -2; -1; 10; 20; 34; 35; 39; 44; 45; 49; 54; 55; 59; 60; 70; 80,-3; -2; -1; 10; 20; 34; 35; 39; 44; 45; 49; 54; 55; 59; 60; 70; 80
+"Participation in non-formal education and training, last 12 months",haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+"Education or training received, last 12 months",haven_labelled,-3; -2; -1; 0; 1,-3; -2; -1; 0; 1
+Self-perceived general health,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Limitation in activities because of health problems,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+"Monthly take home pay from main job, 2009-2020 (deciles)",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10
+Registration at public employment service,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+"Economic activity, main job, 1992-2008 (NACE Rev 1.1, 1 digit)",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17
+"Economic activity, 2nd job, 1992-2008 (NACE Rev 1.1, 1 digit)",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17
+"Economic activity, last job, 1992-2008 (NACE Rev 1.1, 1 digit)",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17
+"Occupation, main job, 1992-2010 (ISCO-88, 3 digits)",haven_labelled,N/A,Continuous/too many values
+"Occupation, main job, 1992-2010 (ISCO-88, 1 digit)",haven_labelled,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90
+"Occupation, last job, 1992-2010 (ISCO-88, 3 digits)",haven_labelled,N/A,Continuous/too many values
+"Occupation, last job, 1992-2010 (ISCO-88, 1 digit)",haven_labelled,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90,-3; -2; -1; 0; 10; 20; 30; 40; 50; 60; 70; 80; 90
+Main type of childcare used for own/spouse's children <15,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Person regularly takes care of other children <15 or other persons >=15,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Wish to change the organisation of working life and care responsibilities,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Main reason (linked with childcare) for not working or not working more,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Reduction of work / special arrangements in unusual care situations,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Main reason (linked with care of others) for not working or not working more,haven_labelled,-3; -2; -1; 1; 3; 4; 5; 6,-3; -2; -1; 1; 3; 4; 5; 6
+Possible to vary start and/or end of working day for family reasons,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Possible to organise working time to take whole days off for family reasons,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+"Time off from work for family sickness or emergency, last 12 months",haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+"Parental leave taken, last 12 months",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7
+"Main reason for not having taken parental leave, last 12 months",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7
+Person is child or adult,haven_labelled,-4; -3; 1; 2,-4; -3; 1; 2
+Number of children 0-2 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6,-4; -3; 0; 1; 2; 3; 4; 5; 6
+Number of children 3-5 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4,-4; -3; 0; 1; 2; 3; 4
+Number of children 6-8 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5,-4; -3; 0; 1; 2; 3; 4; 5
+Number of children 9-11 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5,-4; -3; 0; 1; 2; 3; 4; 5
+Number of children 12-14 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5,-4; -3; 0; 1; 2; 3; 4; 5
+Number of children 15-17 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7
+Number of children <15 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13
+Total number of children in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15
+Age of the youngest child <15 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14
+Age of the youngest child in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17
+Number of adults in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 17,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 17
+Number of persons >=65 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Number of persons in the household,haven_labelled,-4; -3; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 22; 23,-4; -3; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 22; 23
+Number of employed persons >=15 years in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11
+Number of employed adults in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11
+Number of unemployed adults in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 12,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 12
+Number of adults outside the labour force in the household,haven_labelled,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 13,-4; -3; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 13
+Working status of adults living in the household,haven_labelled,-4; -3; 1; 2; 3; 4; 5; 6,-4; -3; 1; 2; 3; 4; 5; 6
+Jobless household,haven_labelled,-4; -3; 1; 2; 3,-4; -3; 1; 2; 3
+Household composition,haven_labelled,-4; -3; 10; 11; 12; 13; 20; 21; 22; 23; 30; 31; 32; 33,-4; -3; 10; 11; 12; 13; 20; 21; 22; 23; 30; 31; 32; 33
+Partner of the person in the household,haven_labelled,-4; -3; 1; 2,-4; -3; 1; 2
+Parent(s) of the person in the household,haven_labelled,-4; -3; 1; 2; 3; 4,-4; -3; 1; 2; 3; 4
+Child(ren) of the person in the household,haven_labelled,-4; -3; 1; 2,-4; -3; 1; 2
+Main labour status just after leaving last job or business,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+More opportunities to update skills would contribute to staying longer at work,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+"Person receives pension/benefits, other than retirement/unemployment benefits",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Person reduced working hours in a move to full retirement,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Main reason for (early) retirement,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Better health and/or safety at workplace would contribute to work longer,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Main financial incentive to stay at work,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Planned age for stopping all work for pay or profit,haven_labelled,-3; -2; -1; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 72; 73; 75; 80; 94; 95; 96; 97; 98,-3; -2; -1; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 72; 73; 75; 80; 94; 95; 96; 97; 98
+More flexible working time arrangements would contribute to work longer,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Age at which person started to receive an individual retirement pension,haven_labelled,-3; -2; -1; 20; 40; 41; 43; 45; 46; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 97; 98,-3; -2; -1; 20; 40; 41; 43; 45; 46; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 97; 98
+Number of years spent working for pay or profit,haven_labelled,N/A,Continuous/too many values
+"Accidental injury(ies) at work, last 12 months",haven_labelled,-3; -2; -1; 0; 1; 2,-3; -2; -1; 0; 1; 2
+Type of most recent accidental injury at work,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+When person was able to start to work again after most recent accidental injury,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10
+Job done when most recent accidental injury occurred,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+"Illness, disability or other health problem, apart from accidental injury",haven_labelled,-3; -2; -1; 0; 1; 2,-3; -2; -1; 0; 1; 2
+Type of most serious complaint caused or made worse by work,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10
+Whether most serious complaint limits ability for day to day activities,haven_labelled,-3; -2; -1; 0; 1; 2,-3; -2; -1; 0; 1; 2
+"Number of days off work due to most serious complaint, last 12 months",haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Job that caused or made worse most serious complaint,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Exposure at work to mental well-being risk factors,haven_labelled,-3; -2; -1; 0; 1; 2; 3,-3; -2; -1; 0; 1; 2; 3
+Exposure at work to physical health risk factors,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4,-3; -2; -1; 0; 1; 2; 3; 4
+Age of citizenship acquisition,haven_labelled,-3; -2; -1; 2; 7; 12; 17; 22; 27; 32; 37; 42; 47; 52; 57; 62; 67; 72; 96; 97; 98,-3; -2; -1; 2; 7; 12; 17; 22; 27; 32; 37; 42; 47; 52; 57; 62; 67; 72; 96; 97; 98
+Years of residence in the host country prior to last entry,haven_labelled,-3; -2; -1; 0; 2; 7; 12; 17; 22; 27; 37,-3; -2; -1; 0; 2; 7; 12; 17; 22; 27; 37
+Country of birth of father,haven_labelled,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 21; 22; 23; 24; 25; 26; 27; 28,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 21; 22; 23; 24; 25; 26; 27; 28
+Country of birth of mother,haven_labelled,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28
+Main reason for migrating (last migration),haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Whether duration of current residence permit/visa/certificate is limited,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Whether current legal access to the labour market is restricted,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Establishing what highest qualification equates to in host country system,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Need to improve host country language skills to get appropriate job,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Main help received in host country in finding current job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+"Use of services for labour market integration, in 2 years following last arrival",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Highest level of education successfully completed by father or mother,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Country of birth of father,haven_labelled,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26
+Country of birth of mother,haven_labelled,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 21; 22; 23; 24; 25; 26,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 21; 22; 23; 24; 25; 26
+Orientation of highest level of formal education attained (HATLEVEL),haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Month of leaving formal education for the last time,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12
+Year of leaving formal education for the last time,haven_labelled,-3; -2; -1; 1985; 1986; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009,-3; -2; -1; 1985; 1986; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009
+Work during studies in formal education,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7
+Year of start of first job after leaving formal education,haven_labelled,-3; -2; -1; 0; 1; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009,-3; -2; -1; 0; 1; 1987; 1988; 1989; 1990; 1991; 1992; 1993; 1994; 1995; 1996; 1997; 1998; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009
+Month of start of first job after leaving formal education,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12
+Duration of first job after leaving formal education (in months),haven_labelled,N/A,Continuous/too many values
+Method which allowed to find first job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+"Occupation of first job of >3 months after leaving formal education (ISCO-88, 3",haven_labelled,N/A,Continuous/too many values
+Type of contract of first job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Main activity after leaving formal education and before starting first job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Person regularly takes care of other children <15 or other persons <=15,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Use of childcare services per week for youngest child,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Impact of availability and affordability of care facilities,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Main reason (linked with childcare) for not working or working part-time,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Main reason (linked with care of others) for not working or working part-time,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Variable working hours,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Possible to vary start and/or end of working day for family reasons,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Possible to organise working time to take whole days off for family reasons,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Reduced working hours to take care of youngest child,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Stopped working to take care of youngest child,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Full-time parental leave taken to care for youngest child,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+1st basic activity difficulty (most important difficulty),haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11
+2nd basic activity difficulty (2nd most important difficulty),haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11
+Type of longstanding health condition or disease (main type),haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18
+Type of longstanding health condition or disease (2nd main type),haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18
+Cause(s) for limitation in number of weekly work hours,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Main reason for limitation in work caused by other reasons,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Cause(s) for limitation in getting to and from work,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Cause(s) for limitation in type of work,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Needs/uses special equipment or workplace adaptations to enable work,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Needs/uses personal assistance to enable work,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Needs/has special working arrangements to enable work,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Age at which person first received an old-age pension,haven_labelled,-2; -1; 35; 39; 41; 43; 45; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68,-2; -1; 35; 39; 41; 43; 45; 47; 48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 61; 62; 63; 64; 65; 66; 67; 68
+"Pension rights built up so far: old-age pension, statutory scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+"Pension rights built up so far: old-age pension, occupational scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+"Pension rights built up so far: old-age pension, personal scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+"Pension rights built up so far: old-age pension, unknown scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+Expects to continue working/looking for a job after receiving old-age pension,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Early retirement,haven_labelled,-2; -1; 1; 2,-2; -1; 1; 2
+Person receives a pension,haven_labelled,-2; -1; 1; 2,-2; -1; 1; 2
+"Type of pension: old-age pension, statutory scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+"Type of pension: old-age pension, occupational scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+"Type of pension: old-age pension, personal scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+"Type of pension: old-age pension, unknown scheme",haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+Type of pension: unemployment pension,haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+Type of pension: disability pension,haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+Type of pension: survivor's pension,haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+Type of pension: other or unknown,haven_labelled,-2; -1; 0; 1,-2; -1; 0; 1
+Plans to stop work,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Main reason for not staying longer at work,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Person reduced working hours in a move towards full retirement,haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+Main reason for staying at work,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Wish to stay longer at work,haven_labelled,-2; -1; 1; 2,-2; -1; 1; 2
+"Accidents at work, last 12 months",haven_labelled,-3; -2; -1; 0; 1; 2,-3; -2; -1; 0; 1; 2
+Type of accident at work,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Job linked to the accident,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Duration of absence from work because of accident,haven_labelled,-3; -2; -1; 0; 2; 3; 4; 5; 6; 7; 8; 9,-3; -2; -1; 0; 2; 3; 4; 5; 6; 7; 8; 9
+"Work related health problems, last 12 months",haven_labelled,-3; -2; -1; 0; 1; 2,-3; -2; -1; 0; 1; 2
+Type of work related health problem,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11
+Health problem limiting daily activities,haven_labelled,-3; -2; -1; 0; 1; 2,-3; -2; -1; 0; 1; 2
+Job linked to the health problem,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Duration of absence from work because of work related health problem,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Exposure to physical health risk factors,haven_labelled,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6,-3; -2; -1; 0; 1; 2; 3; 4; 5; 6
+Exposure to mental well-being risk factors,haven_labelled,-3; -2; -1; 0; 1; 2; 3,-3; -2; -1; 0; 1; 2; 3
+Country of birth of father,haven_labelled,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 27; 28
+Country of birth of mother,haven_labelled,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 28,-3; -2; -1; 1; 3; 6; 7; 8; 9; 10; 11; 12; 15; 16; 17; 18; 19; 20; 21; 22; 23; 24; 25; 26; 28
+Highest level of education of parents,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Last country of work abroad,haven_labelled,N/A,Continuous/too many values
+Main reason for last migration into host country,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Over-qualified for job,haven_labelled,-3; -2; -1; 1; 2,-3; -2; -1; 1; 2
+Main obstacle to getting suitable job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Second obstacle to getting suitable job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Skills in host country language,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Participation in language course,haven_labelled,-3; -2; -1; 1; 2; 3,-3; -2; -1; 1; 2; 3
+Method finding current job,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-3; -2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Work experience during highest level of education,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Type of work experience that is part of the curriculum,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Level of additional formal education,haven_labelled,-3; -2; -1; 0; 10; 20; 30; 34; 35; 40; 45; 50; 60; 70; 80,-3; -2; -1; 0; 10; 20; 30; 34; 35; 40; 45; 50; 60; 70; 80
+"Level of additional formal education (ISCED-11, 3 levels)",haven_labelled,-2; -1; 0; 1; 2; 3,-2; -1; 0; 1; 2; 3
+Main reason for not completing formal education,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Year of leaving formal education,haven_labelled,-2; -1; 1989; 1992; 1993; 1994; 1995; 1997; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009; 2010; 2011; 2012; 2013; 2014; 2015; 2016,-2; -1; 1989; 1992; 1993; 1994; 1995; 1997; 1999; 2000; 2001; 2002; 2003; 2004; 2005; 2006; 2007; 2008; 2009; 2010; 2011; 2012; 2013; 2014; 2015; 2016
+Month of leaving formal education,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12
+Main reason for not continuing formal education,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+"Most helpful support for finding a job from public agencies, last 12 months",haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Method of finding current job,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Extent to which current job corresponds to level of education,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Willingness to move for job,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Willingness to commute for job,haven_labelled,-2; -1; 1; 2,-2; -1; 1; 2
+"Number and importance of clients, last 12 months",haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6,-2; -1; 1; 2; 3; 4; 5; 6
+Influence over deciding working hours,haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+Main reason for becoming self-employed,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+"Main difficulty as self-employed, last 12 months",haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Main reason for not having employees,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Working with business partners,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Planned hiring of employees or subcontractors, next 12 months",haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6,-2; -1; 1; 2; 3; 4; 5; 6
+"Job satisfaction, main job",haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Job autonomy, main job",haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Preferred professional status, main job",haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+"Main reason for not becoming self-employed, main job",haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Existence of care responsibilities,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Use of childcare services,haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+Factors for not using childcare services,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Effect of childcare responsibilities on employment,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7,-2; -1; 1; 2; 3; 4; 5; 6; 7
+Working time flexibility for care,haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+Flexibility for taking whole days off for care,haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+Main obstacle at work for reconciliation,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7,-2; -1; 1; 2; 3; 4; 5; 6; 7
+Career break for childcare,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5,-3; -2; -1; 1; 2; 3; 4; 5
+Complete length of career breaks for childcare,haven_labelled,-3; -2; -1; 1; 2; 3; 4; 5; 6,-3; -2; -1; 1; 2; 3; 4; 5; 6
+Use of parental leave,haven_labelled,-3; -2; -1; 1; 2; 3; 4,-3; -2; -1; 1; 2; 3; 4
+Career break for incapacitated relatives,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Determination of start and end of working time, main job",haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+"Possibility to take hours off for personal or family matters, main job",haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Possibility to take leave within 3 working days, main job",haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Frequency of unforeseen demands for changed working time, main job",haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+"Worker was contacted during leisure time in last 2 months, main job",haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Method of recording presence or working hours, main job",haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9
+"Frequency to which person works under time pressure, main job",haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Possibility to influence order and content of tasks, main job",haven_labelled,-2; -1; 11; 12; 13; 21; 22; 23; 31; 32; 33,-2; -1; 11; 12; 13; 21; 22; 23; 31; 32; 33
+Main place of work,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+"Commuting time, main job (in minutes)",haven_labelled,N/A,Continuous/too many values
+"Working in more than one location, main job",haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+"Accidents at work, last 12 months",haven_labelled,-2; -1; 0; 1; 2,-2; -1; 0; 1; 2
+Type of accident at work,haven_labelled,-2; -1; 1; 2,-2; -1; 1; 2
+Job linked to the accident,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Duration of absence from work because of accident,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9
+"Work related health problems, last 12 months",haven_labelled,-2; -1; 0; 1; 2,-2; -1; 0; 1; 2
+Type of work related health problem,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11
+Health problem limiting daily activities,haven_labelled,-2; -1; 0; 1; 2,-2; -1; 0; 1; 2
+Job linked to the health problem,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Duration of absence from work because of work related health problem,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Exposure to physical health risk factors,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11
+Exposure to mental well-being risk factors,haven_labelled,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 0; 1; 2; 3; 4; 5; 6; 7; 8
+Country where highest level of education was successfully completed,haven_labelled,N/A,Continuous/too many values
+Recognition of formal qualifications obtained abroad,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Highest level of education of parents,haven_labelled,-2; -1; 1; 2; 3,-2; -1; 1; 2; 3
+Job satisfaction,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Skill equivalence new main and old main job,haven_labelled,-2; -1; 1; 2; 3; 4,-2; -1; 1; 2; 3; 4
+Feeling of being discriminated against at work in current job,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6,-2; -1; 1; 2; 3; 4; 5; 6
+Main obstacle to getting a suitable job,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8
+Time required to find first paid job in host country,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9,-2; -1; 1; 2; 3; 4; 5; 6; 7; 8; 9
+Skills in main host country language before migrating,haven_labelled,-2; -1; 1; 2; 3; 4; 5; 6,-2; -1; 1; 2; 3; 4; 5; 6
+Current skills in main host country language,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Participation in course for main host country language,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Time spent on working on digital devices in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Time spent on reading manuals and technical documents in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Time spent on doing relatively complex calculations in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Time spent on doing hard physical work in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Time spent on tasks involving finger dexterity in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Time spent on interacting with people from the same company in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Time spent on interacting with people from outside the company in main or last j,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+"Time spent on advising, training or teaching other people in main or last job",haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Degree of autonomy on tasks in main or last job,haven_labelled,-2; -1; 11; 12; 13; 21; 22; 23; 31; 32; 33,-2; -1; 11; 12; 13; 21; 22; 23; 31; 32; 33
+Repetitiveness of tasks in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
+Tasks precisely described by strict procedures in main or last job,haven_labelled,-2; -1; 1; 2; 3; 4; 5,-2; -1; 1; 2; 3; 4; 5
