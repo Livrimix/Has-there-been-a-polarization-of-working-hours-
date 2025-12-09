@@ -14,6 +14,9 @@ install.packages("haven")
 install.packages("ISOweek")
 install.packages("forcats")
 install.packages("countrycode")
+install.packages("kableExtra")
+install.packages("gridExtra")
+install.packages("gt")
 library(ggplot2)
 library(countrycode)
 library(forcats)
@@ -22,7 +25,15 @@ library(haven)
 library(dplyr)
 library(stringr)
 library(purrr)
+library(readr)
 library(scales)
+library(tidyr)
+library(RColorBrewer)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(gt)
+library(grid)
 
 # Mise en place des données ####
 
@@ -240,6 +251,67 @@ print(var_summary, n = Inf)
 ```
 
 
+```{r}
+# Commande pour analyser les données disponibles sur la polarisation des heures de travail
+
+
+# D'abord calculer le nombre total
+total_obs <- nrow(data_modifiable)
+
+polarization_check <- data_modifiable %>%
+  summarise(
+    # Variables temporelles
+    years = n_distinct(`Year of survey`),
+    quarters = n_distinct(`Fixed reference quarter`),
+    
+    # Heures de travail
+    hours_usual = sum(!is.na(`Number of hours usually worked, main job`)),
+    hours_actual = sum(!is.na(`Number of hours actually worked, main job`)),
+    ftpt = sum(!is.na(`Full- or part-time, main job (self-defined)`)),
+    
+    # Démographie
+    age = sum(!is.na(`Age in completed years`)),
+    sex = sum(!is.na(sex)),
+    
+    # Emploi
+    nace = sum(!is.na(`Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)`)),
+    eseg = sum(!is.na(`European Socio-economic Group (ESeG, 1 digit)`)),
+    
+    # Revenu
+    income = sum(!is.na(`Monthly take home pay from main job, 2009-2020 (deciles)`)),
+    
+    # Éducation
+    education = sum(!is.na(`Highest level of education (ISCED-11, 3 levels)`)),
+    
+    # Contraintes
+    wish_more = sum(!is.na(`Wish to work more than current number of hours`))
+  ) %>%
+  gather(variable, n) %>%
+  mutate(
+    prop = n / total_obs * 100,
+    variable_name = case_when(
+      variable == "hours_usual" ~ "Heures habituelles",
+      variable == "hours_actual" ~ "Heures effectives",
+      variable == "ftpt" ~ "Temps plein/partiel",
+      variable == "age" ~ "Âge",
+      variable == "sex" ~ "Sexe",
+      variable == "nace" ~ "Secteur (NACE)",
+      variable == "eseg" ~ "Groupe socio-éco (ESeG)",
+      variable == "income" ~ "Revenu (déciles)",
+      variable == "education" ~ "Éducation",
+      variable == "wish_more" ~ "Souhaite travailler plus",
+      variable == "years" ~ "Années disponibles",
+      variable == "quarters" ~ "Trimestres",
+      TRUE ~ variable
+    )
+  ) %>%
+  select(variable = variable_name, observations = n, `%_disponible` = prop)
+
+print(polarization_check, n = Inf)
+cat("\nTotal d'observations dans data_modifiable:", total_obs)
+```
+
+
 
 
 
@@ -283,7 +355,7 @@ ggplot(data_emp, aes(x = `Number of hours actually worked, main job`)) +
 
 ```{r}
 # Comparaison des densités des heures habituellement VS effectivement travaillées
-ggplot() +
+p <- ggplot() +
   geom_density(
     data = data_modifiable %>% 
       filter(`Being in employment` == "Employed"),
@@ -296,23 +368,34 @@ ggplot() +
     data = data_modifiable %>% 
       filter(`Being in employment` == "Employed"),
     aes(x = `Number of hours actually worked, main job`, 
-        color = "Heures effectuées",
-        fill = "Heures effectuées"),
+        color = "Heures effectives travaillées",
+        fill = "Heures effectives travaillées"),
     alpha = 0.3
   ) +
   scale_color_manual(values = c("Heures habituelles" = "steelblue",
-                                "Heures effectuées" = "darkred")) +
+                                "Heures effectives travaillées" = "darkred")) +
   scale_fill_manual(values = c("Heures habituelles" = "steelblue",
-                               "Heures effectuées" = "darkred")) +
+                               "Heures effectives travaillées" = "darkred")) +
   theme_minimal() +
   labs(
-    title = "Densités des heures habituellement / effectivement travaillées",
+    title = "Normes structurelles vs. Variabilité hebdomadaire : Distribution des heures de travail",
+    subtitle = "Les heures habituelles reflètent les normes contractuelles tandis que les heures effectives capturent les fluctuations temporaires",
     x = "Heures",
     y = "Densité",
     color = "Type d'heures",
     fill = "Type d'heures"
-  )
+  ) +
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        plot.subtitle = element_text(size = 8))
 
+print(p)
+
+ggsave("densite_heures_travail_haute_qualite.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
 
 ```
 On voit que les heures de travailles habituelles sont davantages concentrées en des points (qui correpondent aux heures contractuelles) alors que les heures effectuées varient davantage (c'est moins représentatif car dépend uniquement d'une variation locale i.e le nombre d'heures de travail la semaine à laquelle l'individu a été enquété)
@@ -365,9 +448,16 @@ ggplot(hours_by_country,
 
 ```
 
+
+
+
+
+Evolution des heures de travail usuels par année
+
+
 ```{r}
 
-# 1. Calculer la moyenne des heures par année (et par trimestre si voulu)
+# 1. Calculer la moyenne des heures par année
 hours_evolution <- data_emp %>%
   group_by(`Year of survey`) %>%
   summarise(
@@ -391,7 +481,7 @@ print(hours_evolution, n = Inf)
 ```{r}
 
 # 2. Graphique simple : évolution annuelle
-ggplot(hours_evolution, aes(x = `Year of survey`, y = mean_hours)) +
+p <- ggplot(hours_evolution, aes(x = `Year of survey`, y = mean_hours)) +
   geom_line(color = "steelblue", linewidth = 1.2) +
   geom_point(color = "darkblue", size = 3) +
   geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), 
@@ -409,6 +499,9 @@ ggplot(hours_evolution, aes(x = `Year of survey`, y = mean_hours)) +
     plot.title = element_text(face = "bold", size = 14),
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
+
+print(p)
+
 ```
 
 
@@ -448,6 +541,51 @@ if (nrow(hours_evolution) > 1) {
 }
 ```
 
+
+```{r}
+# 4 bis, tout sur un même graphique
+
+# Calculer la régression linéaire pour l'étiquette
+lm_model <- lm(mean_hours ~ `Year of survey`, data = hours_evolution)
+slope <- round(coef(lm_model)[2], 3)
+
+p <- ggplot(hours_evolution, aes(x = `Year of survey`, y = mean_hours)) +
+  geom_line(color = "steelblue", linewidth = 1.2) +
+  geom_point(color = "darkblue", size = 3) +
+  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), 
+              alpha = 0.2, fill = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", 
+              linewidth = 1, linetype = "dashed") +
+  # Ajouter l'étiquette de la pente
+  annotate("text", x = Inf, y = Inf, 
+           label = paste("Tendance:", ifelse(slope > 0, "+", ""), slope, "heures/an"),
+           hjust = 1.1, vjust = 1.5, color = "darkred", size = 4, fontface = "bold") +
+  theme_minimal() +
+  labs(
+    title = "Évolution des heures hebdomadaires habituellement travaillées",
+    subtitle = "Personnes en emploi seulement | Moyenne annuelle avec intervalle de confiance 95%",
+    x = "Année",
+    y = "Heures hebdomadaires moyennes",
+    caption = "Source: EU LFS 2023 | Ligne rouge pointillée: tendance linéaire"
+  ) +
+  scale_x_continuous(breaks = unique(hours_evolution$`Year of survey`)) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+print(p)
+
+ggsave("evolution_heures_travail-hebdomadaires_habituelles.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+
+
+```
+
 ```{r}
 # 5. Tableau récapitulatif détaillé
 cat("\n=== RÉCAPITULATIF PAR ANNÉE ===\n")
@@ -472,7 +610,7 @@ print(hours_summary, n = Inf)
 
 
 
-Evolution des heures de travail en fonction du quintile :
+Evolution des heures de travail en fonction du quintile de revenu :
 
 Utilisons la variable de revenu (déciles) : Monthly take home pay from main job, 2009-2020 (deciles)
 
@@ -540,6 +678,8 @@ corrected_dist <- data_hours_income_corrected %>%
 print(corrected_dist)
 
 ```
+
+
 ```{r}
 # Vérification : nombre d'observations par année
 cat("\n=== OBSERVATIONS PAR ANNÉE (après correction) ===\n")
@@ -548,22 +688,16 @@ year_counts <- data_hours_income_corrected %>%
   summarise(n = n(), .groups = "drop")
 
 print(year_counts)
-#C'est bien régulier, proche de 16 000 observations par année 
+# C'est bien régulier, proche de 16 000 observations par année 
 ```
 
 ```{r}
-# Calculer l'évolution par année et quintile
-hours_by_income_corrected <- data_hours_income_corrected %>%
-  group_by(`Year of survey`, income_quintile) %>%
-  summarise(
-    mean_hours = mean(`Number of hours usually worked, main job`, na.rm = TRUE),
-    n = n(),
-    se_hours = sd(`Number of hours usually worked, main job`, na.rm = TRUE) / sqrt(n),
-    .groups = "drop"
-  )
 
-# Graphique
-ggplot(hours_by_income_corrected,
+# Créer une palette bleue graduée (5 couleurs)
+income_palette <- colorRampPalette(c("#0571B0", "#92C5DE"))(5)
+
+# Graphique avec palette professionnelle
+p <- ggplot(hours_by_income_corrected,
        aes(x = `Year of survey`, y = mean_hours, color = income_quintile)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 3) +
@@ -581,21 +715,28 @@ ggplot(hours_by_income_corrected,
     fill = "Quintile de revenu"
   ) +
   scale_x_continuous(breaks = seq(2009, 2020, 1)) +
-  scale_color_manual(values = c("Q1 (0-20%)" = "red",
-                               "Q2 (20-40%)" = "orange",
-                               "Q3 (40-60%)" = "green",
-                               "Q4 (60-80%)" = "blue",
-                               "Q5 (80-100%)" = "purple")) +
-  scale_fill_manual(values = c("Q1 (0-20%)" = "red",
-                              "Q2 (20-40%)" = "orange",
-                              "Q3 (40-60%)" = "green",
-                              "Q4 (60-80%)" = "blue",
-                              "Q5 (80-100%)" = "purple")) +
+  scale_color_manual(values = setNames(income_palette, 
+                                      c("Q1 (0-20%)", "Q2 (20-40%)", "Q3 (40-60%)", 
+                                        "Q4 (60-80%)", "Q5 (80-100%)"))) +
+  scale_fill_manual(values = setNames(income_palette, 
+                                     c("Q1 (0-20%)", "Q2 (20-40%)", "Q3 (40-60%)", 
+                                       "Q4 (60-80%)", "Q5 (80-100%)"))) +
   theme(
     plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 10),
     legend.position = "right",
     axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
   )
+
+
+print(p)
+
+ggsave("evolution_heures_travail-quintile_de_revenu.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
 
 
 ```
@@ -669,8 +810,33 @@ trends_formatted <- trends_table %>%
 print(trends_formatted, n = Inf)
 ```
 
-On observe une diminution bien plus forte dans le premier quintile (deux fois plus forte que dans la classe moyenne 3e quintile)
+```{r}
+# Pour le rendu de Stat Desc
 
+table_grob <- tableGrob(trends_formatted, 
+                        rows = NULL,
+                        theme = ttheme_minimal(
+                          base_size = 10,
+                          padding = unit(c(4, 4), "mm"),
+                          core = list(
+                            fg_params = list(hjust = 0, x = 0.05),
+                            bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 3), "#f9f9f9"))
+                          ),
+                          colhead = list(
+                            bg_params = list(fill = "#2c7bb6", col = NA),
+                            fg_params = list(col = "white", fontface = "bold")
+                          )
+                        ))
+
+# Sauvegarder
+ggsave("tendances_quintiles_table.png", 
+       table_grob, 
+       width = 10, 
+       height = 4, 
+       dpi = 300, 
+       bg = "white")
+
+```
 
 
 
@@ -693,24 +859,154 @@ print(sex_hours, n = Inf)
 ```
 
 ```{r}
-# Graphique
-ggplot(sex_hours, aes(x = `Year of survey`, y = mean_hours, color = sex_label)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 3) +
+# Palette professionnelle
+gender_palette <- c("Hommes" = "#2E5A87", "Femmes" = "#B43C3C")  # Bleu marine / Rouge bordeaux
+
+# Graphique avec meilleures proportions
+p_gender <- ggplot(sex_hours, aes(x = `Year of survey`, y = mean_hours, color = sex_label)) +
+  # Tendance linéaire avec intervalle de confiance léger
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", 
+              linewidth = 0.6, alpha = 0.1, fill = "gray90") +
+  # Ligne principale plus épaisse
+  geom_line(linewidth = 1.5) +
+  # Points légèrement plus petits
+  geom_point(size = 2.2, shape = 19) +
+  # Labels
   labs(
-    title = "Évolution des heures travaillées par sexe",
-    subtitle = "Heures hebdomadaires moyennes",
+    title = "Évolution des heures hebdomadaires travaillées par sexe",
+    subtitle = "Moyenne annuelle des heures habituellement travaillées (personnes en emploi)",
     x = "Année",
-    y = "Heures moyennes",
-    color = "Sexe"
+    y = "Heures hebdomadaires moyennes",
+    color = NULL,
+    caption = "Source: EU Labour Force Survey 2023"
   ) +
-  scale_color_manual(values = c("Hommes" = "blue", "Femmes" = "red")) +
-  theme_minimal() +
+  # Échelles
+  scale_color_manual(values = gender_palette) +
+  scale_x_continuous(breaks = seq(1985, 2020, 5)) +
+  scale_y_continuous(limits = c(30, 45), breaks = seq(30, 45, 3)) +
+  # Thème minimaliste
+  theme_minimal(base_size = 13) +
   theme(
-    plot.title = element_text(face = "bold"),
-    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, margin = margin(b = 8)),
+    plot.subtitle = element_text(size = 12, color = "gray40", hjust = 0.5, margin = margin(b = 15)),
+    plot.caption = element_text(size = 10, color = "gray50", margin = margin(t = 10)),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top",
+    legend.text = element_text(size = 12, margin = margin(r = 15)),
+    legend.margin = margin(b = 10),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", linewidth = 0.4),
+    plot.margin = unit(c(1.5, 1.5, 1.5, 1.5), "cm"),  # Marges augmentées
+    aspect.ratio = 0.6  # Ratio plus vertical (ajustez selon besoin)
   )
+
+# Afficher et sauvegarder
+print(p_gender)
+ggsave("evolution_heures_sexe.png", p_gender, width = 11, height = 7, dpi = 300, bg = "white")
+
 ```
+
+
+
+```{r}
+# Calcul des tendances
+trends_sex <- sex_hours %>%
+  group_by(sex_label) %>%
+  summarise(
+    Période = paste(min(`Year of survey`), "-", max(`Year of survey`)),
+    Moyenne = round(mean(mean_hours), 1),
+    `Tendance (h/an)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2], 3),
+    `p-value` = round(summary(lm(mean_hours ~ `Year of survey`))$coefficients[2,4], 4),
+    `R²` = round(summary(lm(mean_hours ~ `Year of survey`))$r.squared, 4),  # Notez les backticks
+    Observations = n()
+  ) %>%
+  rename(Sexe = sex_label)
+
+# Affichage
+print(trends_sex)
+```
+
+
+```{r}
+# Calcul des tendances par sexe (version améliorée)
+sex_trends_table <- sex_hours %>%
+  group_by(sex_label) %>%
+  summarise(
+    `Période` = paste(min(`Year of survey`), "-", max(`Year of survey`)),
+    `Heures moyennes` = round(mean(mean_hours), 1),
+    `Tendance (h/an)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2], 3),
+    `Tendance (h/décennie)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2] * 10, 2),
+    `Valeur p` = round(summary(lm(mean_hours ~ `Year of survey`))$coefficients[2,4], 4),
+    `R²` = round(summary(lm(mean_hours ~ `Year of survey`))$r.squared, 4),
+    `Heures 1983` = round(mean_hours[`Year of survey` == min(`Year of survey`)], 1),
+    `Heures 2022` = round(mean_hours[`Year of survey` == max(`Year of survey`)], 1),
+    `Évolution (h)` = round(mean_hours[`Year of survey` == max(`Year of survey`)] - 
+                           mean_hours[`Year of survey` == min(`Year of survey`)], 1),
+    Observations = n()
+  ) %>%
+  rename(Sexe = sex_label) %>%
+  mutate(
+    Significativité = ifelse(`Valeur p` < 0.001, "***",
+                            ifelse(`Valeur p` < 0.01, "**",
+                                  ifelse(`Valeur p` < 0.05, "*", "NS")))
+  ) %>%
+  select(Sexe, `Période`, `Heures moyennes`, `Tendance (h/an)`, `Tendance (h/décennie)`,
+         Significativité, `Valeur p`, `R²`, `Heures 1983`, `Heures 2022`, `Évolution (h)`, Observations)
+
+# Création du tableau
+
+table_grob_sex <- tableGrob(sex_trends_table, 
+                        rows = NULL,
+                        theme = ttheme_minimal(
+                          base_size = 10,
+                          padding = unit(c(4, 4), "mm"),
+                          core = list(
+                            fg_params = list(hjust = 0, x = 0.05),
+                            bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 
+                                                          nrow(sex_trends_table)/2), "#f9f9f9"))
+                          ),
+                          colhead = list(
+                            bg_params = list(fill = "#2c7bb6", col = NA),
+                            fg_params = list(col = "white", fontface = "bold")
+                          )
+                        ))
+
+# Ajouter un titre au tableau
+title <- textGrob("Tendances des heures travaillées par sexe (1983-2022)",
+                  gp = gpar(fontsize = 12, fontface = "bold"),
+                  x = 0, hjust = 0)
+
+# Ajouter une note de bas de page
+footnote <- textGrob("*** p < 0.001, ** p < 0.01, * p < 0.05, NS = Non significatif",
+                     gp = gpar(fontsize = 9, fontface = "italic", col = "gray50"),
+                     x = 0, hjust = 0)
+
+# Combiner les éléments
+final_table <- arrangeGrob(title,
+                          table_grob_sex,
+                          footnote,
+                          ncol = 1,
+                          heights = c(0.07, 0.85, 0.08))
+
+# Sauvegarder le tableau
+ggsave("tendances_heures_par_sexe_tableau.png", 
+       plot = final_table, 
+       width = 14,    # Plus large car plus de colonnes
+       height = 4.5,  # Un peu plus haut
+       dpi = 300, 
+       bg = "white")
+
+print(sex_trends_table)
+```
+
+
+
+
+
+
+
 
 ANALYSE PAR ÂGE
 

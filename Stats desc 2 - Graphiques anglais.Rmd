@@ -1,0 +1,344 @@
+---
+title: "Stats desc 2 - Graphiques anglais"
+output: html_document
+---
+
+Pour que les commandes fonctionnent, il faut d'abord avoir effectué les commandes qui précèdent leur version française dans Stat desc 2.Rmd
+
+
+Densités des heures de travail moyennes : Habituelles/Usuelles VS Effectuées (la semaine de l'enquête)
+```{r}
+p <- ggplot() +
+  geom_density(
+    data = data_modifiable %>% 
+      filter(`Being in employment` == "Employed"),
+    aes(x = `Number of hours usually worked, main job`, 
+        color = "Usual hours",
+        fill = "Usual hours"),
+    alpha = 0.3
+  ) +
+  geom_density(
+    data = data_modifiable %>% 
+      filter(`Being in employment` == "Employed"),
+    aes(x = `Number of hours actually worked, main job`, 
+        color = "Actual hours worked",
+        fill = "Actual hours worked"),
+    alpha = 0.3
+  ) +
+  scale_color_manual(values = c("Usual hours" = "steelblue",
+                                "Actual hours worked" = "darkred")) +
+  scale_fill_manual(values = c("Usual hours" = "steelblue",
+                               "Actual hours worked" = "darkred")) +
+  theme_minimal() +
+  labs(
+    title = "Structural Norms vs. Weekly Variability: Distribution of Working Hours",
+    subtitle = "Usual hours reflect contractual norms while actual hours capture temporary fluctuations",
+    x = "Hours",
+    y = "Density",
+    color = "Type of hours",
+    fill = "Type of hours"
+  ) +
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        plot.subtitle = element_text(size = 10))
+
+print(p)
+
+ggsave("EN-densite_heures_travail_haute_qualite.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,      # hauteur en pouces
+       dpi = 300,       # résolution élevée
+       bg = "white")    # fond blanc
+```
+
+
+
+
+
+Evolution des heures de travail usuels par année (4 bis)
+
+```{r}
+
+# Calculate linear regression for the label
+lm_model <- lm(mean_hours ~ `Year of survey`, data = hours_evolution)
+slope <- round(coef(lm_model)[2], 3)
+
+p <- ggplot(hours_evolution, aes(x = `Year of survey`, y = mean_hours)) +
+  geom_line(color = "steelblue", linewidth = 1.2) +
+  geom_point(color = "darkblue", size = 3) +
+  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), 
+              alpha = 0.2, fill = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", 
+              linewidth = 1, linetype = "dashed") +
+  # Add slope label
+  annotate("text", x = Inf, y = Inf, 
+           label = paste("Trend:", ifelse(slope > 0, "+", ""), slope, "hours/year"),
+           hjust = 1.1, vjust = 1.5, color = "darkred", size = 4, fontface = "bold") +
+  theme_minimal() +
+  labs(
+    title = "Evolution of Usual Weekly Hours Worked",
+    subtitle = "Employed persons only | Annual average with 95% confidence interval",
+    x = "Year",
+    y = "Average weekly hours",
+    caption = "Source: EU LFS 2023 | Dashed red line: linear trend"
+  ) +
+  scale_x_continuous(breaks = unique(hours_evolution$`Year of survey`)) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+print(p)
+
+ggsave("EN-evolution_heures_travail-hebdomadaires_habituelles.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+
+
+```
+
+
+
+
+Evolution des heures de travail par quintile
+
+```{r}
+# Create a graduated blue color palette (5 colors)
+income_palette <- colorRampPalette(c("#0571B0", "#92C5DE"))(5)
+
+# Graph with professional palette
+p <- ggplot(hours_by_income_corrected,
+       aes(x = `Year of survey`, y = mean_hours, color = income_quintile)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  geom_ribbon(aes(ymin = mean_hours - 1.96 * se_hours,
+                  ymax = mean_hours + 1.96 * se_hours,
+                  fill = income_quintile),
+              alpha = 0.1, linetype = 0) +
+  theme_minimal() +
+  labs(
+    title = "Evolution of Working Hours by Income Quintile (2009-2020)",
+    subtitle = "Corrected data: excludes 'Not available' (-3) and limited to years with valid data",
+    x = "Year",
+    y = "Average weekly hours",
+    color = "Income quintile",
+    fill = "Income quintile"
+  ) +
+  scale_x_continuous(breaks = seq(2009, 2020, 1)) +
+  scale_color_manual(values = setNames(income_palette, 
+                                      c("Q1 (0-20%)", "Q2 (20-40%)", "Q3 (40-60%)", 
+                                        "Q4 (60-80%)", "Q5 (80-100%)"))) +
+  scale_fill_manual(values = setNames(income_palette, 
+                                     c("Q1 (0-20%)", "Q2 (20-40%)", "Q3 (40-60%)", 
+                                       "Q4 (60-80%)", "Q5 (80-100%)"))) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 10),
+    legend.position = "right",
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+  )
+
+print(p)
+
+ggsave("EN-evolution_heures_travail-quintile_de_revenu.png",
+       plot = p,
+       width = 8,      # largeur en pouces
+       height = 5,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+
+
+```
+
+```{r}
+
+# Formatted version for presentation
+cat("\n=== TRENDS IN WORKING HOURS BY INCOME QUINTILE (2009-2020) ===\n\n")
+
+trends_formatted <- trends_table %>%
+  mutate(
+    `Trend` = paste0(
+      ifelse(`Pente (heures/an)` > 0, "+", ""),
+      round(`Pente (heures/an)`, 3),
+      " h/year (",
+      ifelse(`Pente (heures/décennie)` > 0, "+", ""),
+      round(`Pente (heures/décennie)`, 2),
+      " h/decade) ",
+      `Significativité`
+    ),
+    `R²` = round(`R²`, 4)
+  ) %>%
+  select(
+    `Income quintile` = `Quintile revenu`,
+    `Trend`,
+    `R²`, 
+    `Average hours` = `Heures moyennes`,
+    `N observations` = `N observations`
+  )
+
+print(trends_formatted, n = Inf)
+```
+
+```{r}
+# For Statistical Description rendering
+
+table_grob <- tableGrob(trends_formatted, 
+                        rows = NULL,
+                        theme = ttheme_minimal(
+                          base_size = 10,
+                          padding = unit(c(4, 4), "mm"),
+                          core = list(
+                            fg_params = list(hjust = 0, x = 0.05),
+                            bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 3), "#f9f9f9"))
+                          ),
+                          colhead = list(
+                            bg_params = list(fill = "#2c7bb6", col = NA),
+                            fg_params = list(col = "white", fontface = "bold")
+                          )
+                        ))
+
+# Save
+ggsave("EN-tendances_quintiles_table.png", 
+       table_grob, 
+       width = 10, 
+       height = 4, 
+       dpi = 300, 
+       bg = "white")
+
+```
+
+
+
+
+
+
+Analyse des tendances par sexe :
+
+```{r}
+
+# Alternative: use scale_color_manual with labels
+gender_palette_en <- c("Men" = "#2E5A87", "Women" = "#B43C3C")
+
+p_gender_en_alt <- ggplot(sex_hours, aes(x = `Year of survey`, y = mean_hours, color = sex_label)) +
+  geom_smooth(method = "lm", se = TRUE, linetype = "dashed", 
+              linewidth = 0.6, alpha = 0.1, fill = "gray90") +
+  geom_line(linewidth = 1.5) +
+  geom_point(size = 2.2, shape = 19) +
+  labs(
+    title = "Evolution of Weekly Working Hours by Gender",
+    subtitle = "Annual average of usual hours worked (employed persons only)",
+    x = "Year",
+    y = "Average weekly hours",
+    color = NULL,
+    caption = "Source: EU Labour Force Survey 2023"
+  ) +
+  scale_color_manual(
+    values = c("#2E5A87", "#B43C3C"),  # Colors in same order as data
+    labels = c("Men", "Women")          # Map French to English labels
+  ) +
+  scale_x_continuous(breaks = seq(1985, 2020, 5)) +
+  scale_y_continuous(limits = c(30, 45), breaks = seq(30, 45, 3)) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5, margin = margin(b = 8)),
+    plot.subtitle = element_text(size = 12, color = "gray40", hjust = 0.5, margin = margin(b = 15)),
+    plot.caption = element_text(size = 10, color = "gray50", margin = margin(t = 10)),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top",
+    legend.text = element_text(size = 12, margin = margin(r = 15)),
+    legend.margin = margin(b = 10),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92", linewidth = 0.4),
+    plot.margin = unit(c(1.5, 1.5, 1.5, 1.5), "cm"),
+    aspect.ratio = 0.6
+  )
+
+print(p_gender_en_alt)
+ggsave("EN-evolution_heures_sexe.png", 
+       p_gender_en_alt, 
+       width = 11, 
+       height = 7, 
+       dpi = 300, 
+       bg = "white")
+
+```
+
+```{r}
+# Calculate trends by gender (enhanced version) - WITH ENGLISH LABELS
+sex_trends_table_en <- sex_hours %>%
+  # First, convert French labels to English
+  mutate(sex_label_english = ifelse(sex_label == "Hommes", "Men", "Women")) %>%
+  group_by(sex_label_english) %>%
+  summarise(
+    `Period` = paste(min(`Year of survey`), "-", max(`Year of survey`)),
+    `Average hours` = round(mean(mean_hours), 1),
+    `Trend (h/year)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2], 3),
+    `Trend (h/decade)` = round(lm(mean_hours ~ `Year of survey`)$coefficients[2] * 10, 2),
+    `p-value` = round(summary(lm(mean_hours ~ `Year of survey`))$coefficients[2,4], 4),
+    `R²` = round(summary(lm(mean_hours ~ `Year of survey`))$r.squared, 4),
+    `Hours 1983` = round(mean_hours[`Year of survey` == min(`Year of survey`)], 1),
+    `Hours 2022` = round(mean_hours[`Year of survey` == max(`Year of survey`)], 1),
+    `Change (h)` = round(mean_hours[`Year of survey` == max(`Year of survey`)] - 
+                           mean_hours[`Year of survey` == min(`Year of survey`)], 1),
+    Observations = n()
+  ) %>%
+  rename(Gender = sex_label_english) %>%
+  mutate(
+    Significance = ifelse(`p-value` < 0.001, "***",
+                         ifelse(`p-value` < 0.01, "**",
+                               ifelse(`p-value` < 0.05, "*", "NS")))
+  ) %>%
+  select(Gender, `Period`, `Average hours`, `Trend (h/year)`, `Trend (h/decade)`,
+         Significance, `p-value`, `R²`, `Hours 1983`, `Hours 2022`, `Change (h)`, Observations)
+
+# Create the table
+table_grob_sex_en <- tableGrob(sex_trends_table_en, 
+                        rows = NULL,
+                        theme = ttheme_minimal(
+                          base_size = 10,
+                          padding = unit(c(4, 4), "mm"),
+                          core = list(
+                            fg_params = list(hjust = 0, x = 0.05),
+                            bg_params = list(fill = c(rep(c("#f9f9f9", "#ffffff"), 
+                                                          nrow(sex_trends_table_en)/2), "#f9f9f9"))
+                          ),
+                          colhead = list(
+                            bg_params = list(fill = "#2c7bb6", col = NA),
+                            fg_params = list(col = "white", fontface = "bold")
+                          )
+                        ))
+
+# Add table title
+title_en <- textGrob("Trends in Working Hours by Gender (1983-2022)",
+                  gp = gpar(fontsize = 12, fontface = "bold"),
+                  x = 0, hjust = 0)
+
+# Add footnote
+footnote_en <- textGrob("*** p < 0.001, ** p < 0.01, * p < 0.05, NS = Not significant",
+                     gp = gpar(fontsize = 9, fontface = "italic", col = "gray50"),
+                     x = 0, hjust = 0)
+
+# Combine elements
+final_table_en <- arrangeGrob(title_en,
+                          table_grob_sex_en,
+                          footnote_en,
+                          ncol = 1,
+                          heights = c(0.07, 0.85, 0.08))
+
+# Save the table
+ggsave("EN-tendances_heures_par_sexe_tableau.png", 
+       plot = final_table_en, 
+       width = 14,
+       height = 4.5,
+       dpi = 300, 
+       bg = "white")
+
+# Display in console
+print(sex_trends_table_en)
+```
+
