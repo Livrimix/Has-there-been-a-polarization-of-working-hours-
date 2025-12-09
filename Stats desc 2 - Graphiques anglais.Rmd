@@ -237,7 +237,7 @@ p_gender_en_alt <- ggplot(sex_hours, aes(x = `Year of survey`, y = mean_hours, c
   ) +
   scale_color_manual(
     values = c("#2E5A87", "#B43C3C"),  # Colors in same order as data
-    labels = c("Men", "Women")          # Map French to English labels
+    labels = c("Women", "Men")          # Map French to English labels
   ) +
   scale_x_continuous(breaks = seq(1985, 2020, 5)) +
   scale_y_continuous(limits = c(30, 45), breaks = seq(30, 45, 3)) +
