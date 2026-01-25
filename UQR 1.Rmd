@@ -608,7 +608,7 @@ for (var in common_vars) {
 ```
 
 
-```{r}
+
 === TABLEAU DES STATISTIQUES DE QUALITÉ D'AJUSTEMENT ===
 
 Modèle                      Observations   R² global   R² within   RMSE (heures)
@@ -618,6 +618,10 @@ Modèle 2 (Effets fixes pays)     316 862      0,432      0,032        11,75
 Modèle 3 (Tendance temporelle)   316 862      0,437      0,032        11,70
 Modèle D10 (10ème centile)       316 862      0,423      0,033         9,02
 Modèle D90 (90ème centile)       316 862      0,293      0,014        11,22
+
+
+```{r}
+
 ```
 
 
