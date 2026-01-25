@@ -1,0 +1,632 @@
+---
+title: "UQR 2"
+output: html_document
+date: "2026-01-25"
+---
+
+```{r}
+
+# --- CODE DE PRÉPARATION DES DONNÉES POUR RENDRE LE SCRIPT INDÉPENDANT ---
+
+# Charger les packages nécessaires
+library(haven)
+library(dplyr)
+library(stringr)
+library(purrr)
+library(forcats)
+
+# Charger les données directement depuis le fichier DTA
+data <- read_dta("eu-lfs 2023 sample.dta")
+
+# Créer data_modifiable (équivalent au premier script)
+data_modifiable <- data
+
+# Transformer les variables en facteurs et gérer les "Not available"
+factor_vars <- c("refmonth", "hhtype", "ageresid", "hhlink", "wkstat", "absreas", 
+                 "empstat", "numjob", "seekwork", "wantwork", "actmetne", "wishmore",
+                 "avaireas", "ilostat", "homework", "stapro", "isco08_3d", "eseg_2d",
+                 "ftpt", "temp", "tempdur", "tempreas", "tempagcy", "ftptreas",
+                 "varitime", "lookoj", "hwwish", "needcare")
+
+for (var in factor_vars) {
+  if (var %in% names(data_modifiable)) {
+    data_modifiable <- data_modifiable %>%
+      mutate(!!sym(var) := as_factor(!!sym(var)),
+             !!sym(var) := na_if(!!sym(var), "Not available"))
+  }
+}
+
+# Transformer la variable sexe (1=homme, 2=femme) en indicatrice (1=femme, 0=homme)
+if ("sex" %in% names(data_modifiable)) {
+  data_modifiable <- data_modifiable %>%
+    mutate(
+      sex = case_when(
+        sex == 1 ~ 0,    # Homme
+        sex == 2 ~ 1,    # Femme
+        TRUE ~ NA_real_
+      )
+    )
+}
+
+# Renommer les colonnes avec leurs labels (comme dans le premier script)
+labels <- sapply(data_modifiable, function(x) attr(x, "label"))
+labels[sapply(labels, is.null) | labels == ""] <- names(data_modifiable)[sapply(labels, is.null) | labels == ""]
+names(data_modifiable) <- labels
+
+# Rendre les noms uniques au cas où
+names(data_modifiable) <- make.unique(names(data_modifiable), sep = ".")
+
+# Vérification rapide
+cat("Dimensions de data_modifiable:", dim(data_modifiable), "\n")
+cat("Variables clés disponibles:\n")
+cat("  - Being in employment:", "Being in employment" %in% names(data_modifiable), "\n")
+cat("  - Number of hours usually worked, main job:", "Number of hours usually worked, main job" %in% names(data_modifiable), "\n")
+cat("  - Yearly weighting factor:", "Yearly weighting factor" %in% names(data_modifiable), "\n")
+cat("  - Age in completed years:", "Age in completed years" %in% names(data_modifiable), "\n")
+cat("  - Year of survey:", "Year of survey" %in% names(data_modifiable), "\n")
+cat("  - Country of residence:", "Country of residence" %in% names(data_modifiable), "\n")
+cat("  - Highest level of education (ISCED-11, 3 levels):", "Highest level of education (ISCED-11, 3 levels)" %in% names(data_modifiable), "\n")
+cat("  - Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit):", "Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)" %in% names(data_modifiable), "\n")
+cat("  - Permanency of main job:", "Permanency of main job" %in% names(data_modifiable), "\n")
+cat("  - Full- or part-time, main job (self-defined):", "Full- or part-time, main job (self-defined)" %in% names(data_modifiable), "\n")
+
+# Vérifier comment est codée la variable "Being in employment"
+cat("\nCodage de 'Being in employment':\n")
+if ("Being in employment" %in% names(data_modifiable)) {
+  print(table(data_modifiable$`Being in employment`, useNA = "always"))
+}
+
+# --- FIN DU CODE DE PRÉPARATION ---
+
+
+```
+
+----- Préparation des variables clés expliquant les quantiles des heures de travail habituellement travaillées: ------------
+
+Y : heures de travail habituellement travaillées
+
+
+Variables de base (toujours inclure) :
+
+- female : sexe (effet genre documenté)
+- age et age² : relation non-linéaire avec les heures
+- education : niveau d'éducation (catégoriel, 3 niveaux ISCED)
+
+Variables structurelles (essentielles pour la polarisation) :
+
+- sector : secteur économique (NACE 1 digit) → effet de composition
+- contract_type : contrat temporaire/permanent → précarité
+- full_part : temps plein/partiel → segmentation du marché
+
+Variables de contrôle (optionnelles mais recommandées) :
+
+country : effets fixes pays (hétérogénéité institutionnelle)
+year : tendance temporelle ou effets fixes année
+
+Variables d'intérêt spécifiques (selon vos hypothèses) :
+
+- Interactions : female × education, female × sector
+
+- Variables familiales (si disponibles) : présence d'enfants, statut marital
+
+```{r}
+# 
+# 
+analysis_data <- data_modifiable %>%
+  mutate(
+    hours = `Number of hours usually worked, main job`,
+    weight = `Yearly weighting factor`,
+    female = sex,
+    age = `Age in completed years`,
+    year = `Year of survey`,
+    country = `Country of residence`,
+    education = `Highest level of education (ISCED-11, 3 levels)`,
+    sector = `Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)`,
+    contract_type = case_when(
+      `Permanency of main job` == "Permanent job" ~ "permanent",
+      `Permanency of main job` == "Fixed-term job" ~ "temporary",
+      TRUE ~ NA_character_
+    ),
+    full_part = `Full- or part-time, main job (self-defined)`
+  ) %>%
+  # CORRECTION ICI : Utiliser "Employed" au lieu de 1
+  filter(`Being in employment` == "Employed") %>%
+  filter(!is.na(hours), hours > 0, hours < 100) %>%
+  mutate(
+    education = as.factor(education),
+    sector = as.factor(sector),
+    contract_type = as.factor(contract_type),
+    full_part = as.factor(full_part)
+  )
+
+# Vérification
+cat("Dimensions:", dim(analysis_data), "\n")
+cat("Nombre d'années:", length(unique(analysis_data$year)), "\n")
+cat("Valeurs uniques de 'year':", sort(unique(analysis_data$year)), "\n")
+cat("Nombre d'observations:", nrow(analysis_data), "\n")
+```
+
+
+
+
+
+
+------------ [ANCIEN] Implémentation de la régression RIF -------------------
+
+
+```{r}
+# Installation et chargement des packages nécessaires
+install.packages("dineq")
+install.packages("fixest")
+install.packages("tidyverse")
+
+library(dineq)
+library(fixest)
+library(tidyverse)
+
+# Calcul des RIF pour D10 (τ=0.1) et D90 (τ=0.9)
+# Correction : recalculer les RIF par année ET par pays car la distribution des heures diffère selon les pays
+
+analysis_data <- analysis_data %>%
+  group_by(year, country) %>%
+  mutate(
+    rif_d10 = rif(x = hours, weights = weight, 
+                  method = "quantile", quantile = 0.1),
+    rif_d90 = rif(x = hours, weights = weight, 
+                  method = "quantile", quantile = 0.9)
+  ) %>%
+  ungroup()
+
+# Création de la variable écart inter-décile
+analysis_data$rif_gap <- analysis_data$rif_d90 - analysis_data$rif_d10
+
+# Vérification que les RIF varient par pays et année
+cat("Vérification de la variation par pays et année :\n")
+sample_check <- analysis_data %>%
+  select(year, country, hours, rif_d10, rif_d90, rif_gap) %>%
+  arrange(year, country) %>%
+  head(20)
+print(sample_check) # oui
+
+# Vérifier le nombre de valeurs uniques par groupe
+cat("\nNombre de valeurs uniques de rif_gap par année-pays :\n")
+analysis_data %>%
+  group_by(year, country) %>%
+  summarise(n_unique = n_distinct(rif_gap), .groups = "drop") %>%
+  arrange(desc(n_unique)) %>%
+  head(10)
+```
+-------------- Nouveaux rif corrigés de valeurs aberrantes qui faussent les regressions --------------
+
+```{r}
+# Fonction améliorée avec gestion d'erreur et bande passante fixe
+calculate_rif_robust <- function(x, tau = 0.5, bw = 1.5, min_density = 0.01) {
+  # Calcul du quantile
+  q <- quantile(x, probs = tau, na.rm = TRUE, type = 7)
+  
+  # Nombre d'observations
+  n <- length(x)
+  
+  # Si trop peu d'observations, utiliser une densité fixe
+  if (n < 50) {
+    # Densité fixe basée sur l'écart interquartile
+    iqr <- IQR(x, na.rm = TRUE)
+    f_q <- 1 / (1.349 * iqr / (n^(1/3)))  # Règle de Silverman simplifiée
+    f_q <- pmax(f_q, min_density)
+  } else {
+    tryCatch({
+      # Estimation de densité avec bande passante fixe
+      dens <- density(x, bw = bw, na.rm = TRUE, kernel = "gaussian")
+      # Interpolation
+      f_q <- approx(dens$x, dens$y, xout = q)$y
+      f_q <- pmax(f_q, min_density)
+    }, error = function(e) {
+      # En cas d'erreur, utiliser une densité par défaut
+      iqr <- IQR(x, na.rm = TRUE)
+      f_q <- 1 / (1.349 * iqr / (n^(1/3)))
+      f_q <- pmax(f_q, min_density)
+    })
+  }
+  
+  # Calcul de la RIF
+  rif <- q + (tau - (x <= q)) / f_q
+  return(rif)
+}
+
+# Solution plus simple : utiliser une bande passante fixe standardisée
+calculate_rif_simple <- function(x, tau = 0.5, min_density = 0.02) {
+  q <- quantile(x, probs = tau, na.rm = TRUE, type = 7)
+  n <- length(x)
+  
+  # Règle de Silverman simplifiée pour la bande passante
+  h <- 1.06 * sd(x, na.rm = TRUE) * n^(-1/5)
+  h <- max(h, 0.5)  # Minimum de 0.5
+  
+  # Densité normale approximative au quantile
+  f_q <- dnorm(q, mean = mean(x, na.rm = TRUE), sd = sd(x, na.rm = TRUE))
+  f_q <- pmax(f_q, min_density)
+  
+  # Calcul RIF
+  rif <- q + (tau - (x <= q)) / f_q
+  return(rif)
+}
+
+# Calcul avec la méthode simple
+analysis_data_corrected <- analysis_data %>%
+  group_by(year, country) %>%
+  mutate(
+    rif_d10_new = calculate_rif_simple(hours, tau = 0.1, min_density = 0.02),
+    rif_d90_new = calculate_rif_simple(hours, tau = 0.9, min_density = 0.02),
+    rif_gap_new = rif_d90_new - rif_d10_new
+  ) %>%
+  ungroup()
+
+# Vérification
+cat("\n=== VÉRIFICATION RAPIDE ===\n")
+cat("Moyenne rif_gap_new:", mean(analysis_data_corrected$rif_gap_new, na.rm = TRUE), "\n")
+cat("Comparaison avec écart réel (28.75h):", 
+    round(mean(analysis_data_corrected$rif_gap_new, na.rm = TRUE), 2), "h\n")
+
+# Vérifier s'il y a des valeurs aberrantes
+summary(analysis_data_corrected$rif_gap_new)
+```
+
+Précision :
+
+La polarisation des heures de travail varie selon les pays (différences institutionnelles, culturelles, économiques). En calculant les RIF par année ET pays, nous capturons :
+
+Les différences de distribution entre pays
+
+L'évolution temporelle spécifique à chaque pays
+
+L'effet réel des variables individuelles sur l'écart inter-décile national
+
+Maintenant que les RIF sont correctement calculés, vous pouvez procéder aux régressions.
+
+
+
+
+
+----------- Vérifications préalables --------------
+
+Nous devons d'abord vérifier que les variables sont bien formatées. Les valeurs de RIF semblent extrêmes (négatives et positives très grandes). Cela pourrait être dû à des problèmes dans le calcul des RIF ou dans les données. Cependant, procédons étape par étape.
+
+Tout d'abord, vérifions la distribution des heures et les "mass points". Ensuite, nous ajusterons les modèles.
+
+Note: Les RIF calculés semblent avoir des valeurs très grandes (par exemple 1318) et négatives (-64.2). Cela pourrait indiquer un problème avec la fonction de densité estimée. Mais continuons.
+
+```{r}
+# 5. Vérifications préalables essentielles
+
+# 1. Vérifier la distribution des heures
+cat("Quantiles 10% et 90% des heures :\n")
+print(quantile(analysis_data$hours, probs = c(0.1, 0.9), na.rm = TRUE))
+
+# Histogramme des heures habituellement travaillées
+hist(analysis_data$hours, breaks = 50, main = "Distribution des heures travaillées", xlab = "Heures hebdomadaires")
+
+# 2. Vérifier les "mass points" (pics à 35h, 40h)
+cat("\nMass points autour de 35h-40h :\n")
+mass_points <- analysis_data %>%
+  filter(hours >= 30 & hours <= 45) %>%
+  count(hours) %>%
+  arrange(desc(n)) %>%
+  head(10)
+print(mass_points)
+
+# 3. Vérifier la taille des échantillons par groupe
+cat("\nTaille des échantillons par année et secteur (top 20) :\n")
+sample_sizes <- analysis_data %>%
+  group_by(year, sector) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  arrange(year, sector) %>%
+  head(20)
+print(sample_sizes)
+
+# Vérifier aussi les valeurs manquantes dans les variables explicatives
+cat("\nValeurs manquantes par variable :\n")
+missing_summary <- analysis_data %>%
+  summarise(across(c(female, age, education, sector, contract_type, full_part), 
+                   ~sum(is.na(.)))) %>%
+  gather(variable, missing_count)
+print(missing_summary)
+```
+
+
+
+--------------- Nouvelles regressions avec les nouveaux RIFs corrigés ------------
+
+```{r}
+
+# Ajouter l'age quadratique (effet non linéaire) et créer education_num pour les interactions
+analysis_data_corrected <- analysis_data %>%
+  mutate(
+    education_num = as.numeric(education),  # Convertir en numérique si nécessaire
+    age_sq = age^2
+  )
+
+# 1. Modèles principaux avec RIF corrigés
+model_basic_corr <- feols(rif_gap_new ~ female + age + age_sq + education + 
+                            sector + contract_type + full_part,
+                          data = analysis_data_corrected,
+                          weights = ~weight,
+                          vcov = "hetero")
+
+model_country_fe_corr <- feols(rif_gap_new ~ female + age + age_sq + education + 
+                                 sector + contract_type + full_part | country,
+                               data = analysis_data_corrected,
+                               weights = ~weight,
+                               vcov = "hetero")
+
+model_trend_corr <- feols(rif_gap_new ~ female*year + age + age_sq + education + 
+                            sector + contract_type + full_part | country,
+                          data = analysis_data_corrected,
+                          weights = ~weight,
+                          vcov = "hetero")
+
+# 2. Modèles par décile avec RIF corrigés
+model_d10_corr <- feols(rif_d10_new ~ female + age + age_sq + education + 
+                          sector + contract_type + full_part | country,
+                        data = analysis_data_corrected,
+                        weights = ~weight,
+                        vcov = "hetero")
+
+model_d90_corr <- feols(rif_d90_new ~ female + age + age_sq + education + 
+                          sector + contract_type + full_part | country,
+                        data = analysis_data_corrected,
+                        weights = ~weight,
+                        vcov = "hetero")
+
+# 3. Afficher les résultats
+cat("\n=== MODÈLES AVEC RIF CORRIGÉS ===\n")
+cat("\nModèle de base (corrigé):\n")
+print(summary(model_basic_corr))
+
+cat("\nModèle avec effets fixes pays (corrigé):\n")
+print(summary(model_country_fe_corr))
+
+cat("\nModèle avec tendance temporelle (corrigé):\n")
+print(summary(model_trend_corr))
+```
+
+
+
+------------------Tableaux synthétiques ---------------
+
+
+1 - Tableau comparatif des coefficients clés : Un tableau unique présentant les coefficients des variables principales (sexe, âge, éducation, type de contrat, statut d'emploi) pour les modèles 1, 2 et 3, avec leurs erreurs standard et niveaux de significativité. Cette présentation permet d'observer l'évolution des effets marginaux lorsque l'on introduit les effets fixes pays et la tendance temporelle.
+
+2 - Tableau de décomposition par décile : Un tableau juxtaposant les coefficients des modèles 4a (D10) et 4b (D90) pour les mêmes variables principales, avec une colonne supplémentaire indiquant la différence entre les deux effets. Ce tableau révèle les asymétries dans les déterminants des extrémités de la distribution.
+
+3 - Tableau des statistiques de qualité d'ajustement : Un tableau récapitulatif présentant pour chaque modèle le nombre d'observations, le R² ajusté, le RMSE et la Within R² le cas échéant. Cela permet d'évaluer la performance relative des spécifications.
+
+
+
+[Ancien] Tableaux en sortie console (texte copiable, non formaté pour être joli) :
+
+```{r}
+# 1. Installation et chargement de modelsummary si nécessaire
+if (!require("modelsummary")) install.packages("modelsummary")
+library(modelsummary)
+
+# 2. Créer une liste des modèles
+model_list <- list(
+  "Modèle 1 (Basique)" = model_basic,
+  "Modèle 2 (Effets fixes pays)" = model_country_fe,
+  "Modèle 3 (Tendance temporelle)" = model_trend
+)
+
+# 3. Définir les coefficients à afficher (variables clés)
+variables_clés <- c(
+  "female" = "Femme (réf: Homme)",
+  "age" = "Âge",
+  "age_sq" = "Âge²",
+  "education-1" = "Éducation: Non disponible",
+  "education1" = "Éducation: Faible",
+  "education2" = "Éducation: Moyenne",
+  "education3" = "Éducation: Élevée",
+  "contract_typetemporary" = "Contrat temporaire (réf: Permanent)",
+  "full_partNot stated" = "Statut emploi: Non spécifié",
+  "full_partFull-time job" = "Statut emploi: Temps plein (réf: Temps partiel)",
+  "year" = "Tendance temporelle",
+  "female:year" = "Interaction Femme × Année"
+)
+
+# 4. Créer le tableau comparatif
+tableau_comparatif <- modelsummary(
+  model_list,
+  output = "data.frame",
+  coef_map = variables_clés,
+  gof_map = c("nobs", "r.squared"),
+  stars = c('*' = 0.1, '**' = 0.05, '***' = 0.01),
+  fmt = 2,
+  statistic = "({std.error})"
+)
+
+# 5. Afficher le tableau
+print(tableau_comparatif)
+```
+
+[Corrigé] tableaux sortie console :
+```{r}
+# Nouvelle liste des modèles corrigés
+model_list_corr <- list(
+  "Modèle 1 corrigé" = model_basic_corr,
+  "Modèle 2 corrigé" = model_country_fe_corr,
+  "Modèle 3 corrigé" = model_trend_corr
+)
+
+
+# 3. Définir les coefficients à afficher (variables clés)
+variables_clés <- c(
+  "female" = "Femme (réf: Homme)",
+  "age" = "Âge",
+  "age_sq" = "Âge²",
+  "education-1" = "Éducation: Non disponible",
+  "education1" = "Éducation: Faible",
+  "education2" = "Éducation: Moyenne",
+  "education3" = "Éducation: Élevée",
+  "contract_typetemporary" = "Contrat temporaire (réf: Permanent)",
+  "full_partNot stated" = "Statut emploi: Non spécifié",
+  "full_partFull-time job" = "Statut emploi: Temps plein (réf: Temps partiel)",
+  "year" = "Tendance temporelle",
+  "female:year" = "Interaction Femme × Année"
+)
+
+# Tableau comparatif des modèles corrigés
+tableau_corrige <- modelsummary(
+  model_list_corr,
+  output = "data.frame",
+  coef_map = variables_clés,  # Utilisez le même coef_map que précédemment
+  gof_map = c("nobs", "r.squared"),
+  stars = c('*' = 0.1, '**' = 0.05, '***' = 0.01),
+  fmt = 2,
+  statistic = "({std.error})"
+)
+
+cat("\n=== TABLEAU COMPARATIF CORRIGÉ ===\n")
+print(tableau_corrige)
+```
+
+
+
+
+
+
+
+
+
+Analyse de l'absence de la variable  "female"
+
+```{r}
+# Vérifier la colinéarité
+library(fixest)
+summary(model_basic, vcov = "hetero", stage = 1)
+
+# Voir toutes les variables estimées (y compris celles exclues)
+print(model_basic$collin.var)  # Variables collinéaires
+print(model_basic$multicol)    # Diagnostic de multicolinéarité
+
+# Alternative : modèle sans full_part pour voir si female apparaît
+model_test <- feols(rif_gap ~ female + age + age_sq + education + sector + contract_type,
+                    data = analysis_data,
+                    weights = ~weight,
+                    vcov = "hetero")
+summary(model_test)
+
+# Vérifier la distribution croisée
+table(analysis_data$female, analysis_data$full_part, useNA = "always")
+prop.table(table(analysis_data$female, analysis_data$full_part), margin = 1) * 100
+```
+
+
+
+----------------- Tableau pour les régressions 4a et 4b ---------------
+
+```{r}
+# Estimation des modèles D10 et D90 avec RIF corrigés et effets fixes pays
+model_d10_corr <- feols(rif_d10_new ~ female + age + age_sq + education + 
+                           sector + contract_type + full_part | country,
+                         data = analysis_data_corrected,
+                         weights = ~weight,
+                         vcov = "hetero")
+
+model_d90_corr <- feols(rif_d90_new ~ female + age + age_sq + education + 
+                           sector + contract_type + full_part | country,
+                         data = analysis_data_corrected,
+                         weights = ~weight,
+                         vcov = "hetero")
+
+# Extraction des coefficients et erreurs standard
+coef_d10 <- coef(model_d10_corr)
+se_d10 <- se(model_d10_corr)
+coef_d90 <- coef(model_d90_corr)
+se_d90 <- se(model_d90_corr)
+
+# Variables communes
+common_vars <- intersect(names(coef_d10), names(coef_d90))
+
+# Création du tableau comparatif
+tableau_decomposition <- data.frame(
+  Variable = common_vars,
+  Coef_D10 = round(coef_d10[common_vars], 3),
+  SE_D10 = round(se_d10[common_vars], 3),
+  Coef_D90 = round(coef_d90[common_vars], 3),
+  SE_D90 = round(se_d90[common_vars], 3),
+  Difference = round(coef_d90[common_vars] - coef_d10[common_vars], 3)
+)
+
+# Ajout des étoiles de significativité (basées sur p-value < 0.05)
+pvalue_d10 <- pvalue(model_d10_corr)[common_vars]
+pvalue_d90 <- pvalue(model_d90_corr)[common_vars]
+
+tableau_decomposition$Signif_D10 <- ifelse(pvalue_d10 < 0.001, "***",
+                                           ifelse(pvalue_d10 < 0.01, "**",
+                                                  ifelse(pvalue_d10 < 0.05, "*", "")))
+
+tableau_decomposition$Signif_D90 <- ifelse(pvalue_d90 < 0.001, "***",
+                                           ifelse(pvalue_d90 < 0.01, "**",
+                                                  ifelse(pvalue_d90 < 0.05, "*", "")))
+
+# Réorganiser les colonnes
+tableau_decomposition <- tableau_decomposition %>%
+  mutate(
+    D10 = paste0(Coef_D10, Signif_D10, " (", SE_D10, ")"),
+    D90 = paste0(Coef_D90, Signif_D90, " (", SE_D90, ")")
+  ) %>%
+  select(Variable, D10, D90, Difference)
+
+# Affichage du tableau
+cat("=== TABLEAU DE DÉCOMPOSITION PAR DÉCILE ===\n")
+cat("Modèle D10 (10ème centile) et D90 (90ème centile) avec effets fixes pays\n")
+cat("Coefficients avec erreurs standard entre parenthèses\n")
+cat("*** p<0.001, ** p<0.01, * p<0.05\n\n")
+
+print(tableau_decomposition, row.names = FALSE)
+
+# Calcul de la significativité de la différence
+# Test d'égalité des coefficients entre D10 et D90
+cat("\n=== TESTS D'ÉGALITÉ DES COEFFICIENTS (D90 - D10) ===\n")
+
+# Pour chaque variable, tester si la différence est significative
+# Nous utiliserons un test de Wald approximé
+for (var in common_vars) {
+  coef_diff <- coef_d90[var] - coef_d10[var]
+  se_diff <- sqrt(se_d10[var]^2 + se_d90[var]^2)
+  t_stat <- coef_diff / se_diff
+  p_val <- 2 * pt(-abs(t_stat), df = model_d10_corr$nobs - length(coef_d10))
+  
+  if (p_val < 0.05) {
+    cat(sprintf("%s: Différence significative (diff=%.3f, t=%.3f, p=%.4f)\n", 
+                var, coef_diff, t_stat, p_val))
+  }
+}
+```
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
