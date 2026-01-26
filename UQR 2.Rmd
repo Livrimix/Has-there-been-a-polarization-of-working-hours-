@@ -150,11 +150,10 @@ cat("Nombre d'observations:", nrow(analysis_data), "\n")
 
 
 
-
------------- [ANCIEN] Implémentation de la régression RIF -------------------
-
+-------------- Nouveaux rif corrigés de valeurs aberrantes qui faussent les regressions --------------
 
 ```{r}
+
 # Installation et chargement des packages nécessaires
 install.packages("dineq")
 install.packages("fixest")
@@ -164,41 +163,6 @@ library(dineq)
 library(fixest)
 library(tidyverse)
 
-# Calcul des RIF pour D10 (τ=0.1) et D90 (τ=0.9)
-# Correction : recalculer les RIF par année ET par pays car la distribution des heures diffère selon les pays
-
-analysis_data <- analysis_data %>%
-  group_by(year, country) %>%
-  mutate(
-    rif_d10 = rif(x = hours, weights = weight, 
-                  method = "quantile", quantile = 0.1),
-    rif_d90 = rif(x = hours, weights = weight, 
-                  method = "quantile", quantile = 0.9)
-  ) %>%
-  ungroup()
-
-# Création de la variable écart inter-décile
-analysis_data$rif_gap <- analysis_data$rif_d90 - analysis_data$rif_d10
-
-# Vérification que les RIF varient par pays et année
-cat("Vérification de la variation par pays et année :\n")
-sample_check <- analysis_data %>%
-  select(year, country, hours, rif_d10, rif_d90, rif_gap) %>%
-  arrange(year, country) %>%
-  head(20)
-print(sample_check) # oui
-
-# Vérifier le nombre de valeurs uniques par groupe
-cat("\nNombre de valeurs uniques de rif_gap par année-pays :\n")
-analysis_data %>%
-  group_by(year, country) %>%
-  summarise(n_unique = n_distinct(rif_gap), .groups = "drop") %>%
-  arrange(desc(n_unique)) %>%
-  head(10)
-```
--------------- Nouveaux rif corrigés de valeurs aberrantes qui faussent les regressions --------------
-
-```{r}
 # Fonction améliorée avec gestion d'erreur et bande passante fixe
 calculate_rif_robust <- function(x, tau = 0.5, bw = 1.5, min_density = 0.01) {
   # Calcul du quantile
@@ -271,6 +235,85 @@ cat("Comparaison avec écart réel (28.75h):",
 summary(analysis_data_corrected$rif_gap_new)
 ```
 
+
+
+
+
+
+--------------------- Meilleur algorithme de caclul des RIF -----------------
+
+```{r}
+# Fonction RIF robuste adaptée aux heures de travail
+calculate_rif_robust_adaptive <- function(x, tau = 0.5, min_density = 0.005) {
+  # 1. Calcul du quantile
+  q <- quantile(x, probs = tau, na.rm = TRUE, type = 7)
+  n <- length(x)
+  
+  # 2. Estimation de densité robuste avec gestion d'erreur
+  f_q <- tryCatch({
+    # Estimation par noyau avec bande passante adaptative
+    bw <- bw.SJ(x, na.rm = TRUE)  # Méthode Sheather-Jones robuste
+    dens <- density(x, bw = bw, na.rm = TRUE, kernel = "gaussian", n = 512, 
+                    from = min(x, na.rm = TRUE), to = max(x, na.rm = TRUE))
+    approx(dens$x, dens$y, xout = q)$y
+  }, error = function(e) {
+    # En cas d'erreur, estimation par règle de Silverman simplifiée
+    iqr <- IQR(x, na.rm = TRUE)
+    sd_val <- sd(x, na.rm = TRUE)
+    h <- 0.9 * min(sd_val, iqr/1.349) * n^(-0.2)
+    1 / (2.5 * h * sqrt(2*pi))  # Approximation de densité gaussienne
+  })
+  
+  # 3. Assurer une densité minimale
+  if (is.na(f_q) || f_q < min_density) {
+    # Règle de secours basée sur l'écart interquartile
+    iqr <- IQR(x, na.rm = TRUE)
+    if (iqr > 0) {
+      f_q <- 1 / (1.349 * iqr / (n^(1/3)))
+    } else {
+      f_q <- 1 / (4 * sd(x, na.rm = TRUE) / (n^(1/3)))
+    }
+    f_q <- pmax(f_q, min_density)
+  }
+  
+  # 4. Calcul du RIF
+  rif <- q + (tau - (x <= q)) / f_q
+  
+  # 5. Contrôle des valeurs aberrantes (clipping soft)
+  # Limiter les RIF à ±3 écarts-types du quantile
+  sd_rif <- sd(rif, na.rm = TRUE)
+  mean_rif <- mean(rif, na.rm = TRUE)
+  if (!is.na(sd_rif) && sd_rif > 0) {
+    rif <- pmax(pmin(rif, mean_rif + 3*sd_rif), mean_rif - 3*sd_rif)
+  }
+  
+  return(rif)
+}
+
+# Application aux données
+analysis_data_corrected <- analysis_data %>%
+  group_by(year, country) %>%
+  mutate(
+    rif_d10_new = calculate_rif_robust_adaptive(hours, tau = 0.1, min_density = 0.005),
+    rif_d90_new = calculate_rif_robust_adaptive(hours, tau = 0.9, min_density = 0.005),
+    rif_gap_new = rif_d90_new - rif_d10_new,
+    education_num = as.numeric(education),  # Ajoutez ici
+    age_sq = age^2  # Ajoutez ici
+  ) %>%
+  ungroup()
+
+# Vérification des résultats
+cat("\n=== VÉRIFICATION DES RIFS CORRIGÉS ===\n")
+cat("Moyenne rif_d10:", mean(analysis_data_corrected$rif_d10_new, na.rm = TRUE), "\n")
+cat("Moyenne rif_d90:", mean(analysis_data_corrected$rif_d90_new, na.rm = TRUE), "\n")
+cat("Moyenne rif_gap:", mean(analysis_data_corrected$rif_gap_new, na.rm = TRUE), "\n")
+cat("Comparaison avec quantiles réels:\n")
+cat("  Q10 réel:", quantile(analysis_data$hours, 0.1, na.rm = TRUE), "\n")
+cat("  Q90 réel:", quantile(analysis_data$hours, 0.9, na.rm = TRUE), "\n")
+cat("  Écart réel:", quantile(analysis_data$hours, 0.9, na.rm = TRUE) - 
+      quantile(analysis_data$hours, 0.1, na.rm = TRUE), "\n")
+```
+
 Précision :
 
 La polarisation des heures de travail varie selon les pays (différences institutionnelles, culturelles, économiques). En calculant les RIF par année ET pays, nous capturons :
@@ -339,11 +382,7 @@ print(missing_summary)
 ```{r}
 
 # Ajouter l'age quadratique (effet non linéaire) et créer education_num pour les interactions
-analysis_data_corrected <- analysis_data %>%
-  mutate(
-    education_num = as.numeric(education),  # Convertir en numérique si nécessaire
-    age_sq = age^2
-  )
+
 
 # 1. Modèles principaux avec RIF corrigés
 model_basic_corr <- feols(rif_gap_new ~ female + age + age_sq + education + 
@@ -358,11 +397,16 @@ model_country_fe_corr <- feols(rif_gap_new ~ female + age + age_sq + education +
                                weights = ~weight,
                                vcov = "hetero")
 
-model_trend_corr <- feols(rif_gap_new ~ female*year + age + age_sq + education + 
-                            sector + contract_type + full_part | country,
-                          data = analysis_data_corrected,
-                          weights = ~weight,
-                          vcov = "hetero")
+# Centrage de year
+analysis_data_corrected <- analysis_data_corrected %>%
+  mutate(year_centered = year - 2000)  # Ou year - mean(year)
+
+
+model_trend_corr <- feols(rif_gap_new ~ female*year_centered + age + age_sq + education + 
+                                     sector + contract_type + full_part | country,
+                                   data = analysis_data_corrected,
+                                   weights = ~weight,
+                                   vcov = "hetero")
 
 # 2. Modèles par décile avec RIF corrigés
 model_d10_corr <- feols(rif_d10_new ~ female + age + age_sq + education + 
@@ -400,52 +444,6 @@ print(summary(model_trend_corr))
 
 3 - Tableau des statistiques de qualité d'ajustement : Un tableau récapitulatif présentant pour chaque modèle le nombre d'observations, le R² ajusté, le RMSE et la Within R² le cas échéant. Cela permet d'évaluer la performance relative des spécifications.
 
-
-
-[Ancien] Tableaux en sortie console (texte copiable, non formaté pour être joli) :
-
-```{r}
-# 1. Installation et chargement de modelsummary si nécessaire
-if (!require("modelsummary")) install.packages("modelsummary")
-library(modelsummary)
-
-# 2. Créer une liste des modèles
-model_list <- list(
-  "Modèle 1 (Basique)" = model_basic,
-  "Modèle 2 (Effets fixes pays)" = model_country_fe,
-  "Modèle 3 (Tendance temporelle)" = model_trend
-)
-
-# 3. Définir les coefficients à afficher (variables clés)
-variables_clés <- c(
-  "female" = "Femme (réf: Homme)",
-  "age" = "Âge",
-  "age_sq" = "Âge²",
-  "education-1" = "Éducation: Non disponible",
-  "education1" = "Éducation: Faible",
-  "education2" = "Éducation: Moyenne",
-  "education3" = "Éducation: Élevée",
-  "contract_typetemporary" = "Contrat temporaire (réf: Permanent)",
-  "full_partNot stated" = "Statut emploi: Non spécifié",
-  "full_partFull-time job" = "Statut emploi: Temps plein (réf: Temps partiel)",
-  "year" = "Tendance temporelle",
-  "female:year" = "Interaction Femme × Année"
-)
-
-# 4. Créer le tableau comparatif
-tableau_comparatif <- modelsummary(
-  model_list,
-  output = "data.frame",
-  coef_map = variables_clés,
-  gof_map = c("nobs", "r.squared"),
-  stars = c('*' = 0.1, '**' = 0.05, '***' = 0.01),
-  fmt = 2,
-  statistic = "({std.error})"
-)
-
-# 5. Afficher le tableau
-print(tableau_comparatif)
-```
 
 [Corrigé] tableaux sortie console :
 ```{r}
@@ -493,31 +491,6 @@ print(tableau_corrige)
 
 
 
-
-
-
-Analyse de l'absence de la variable  "female"
-
-```{r}
-# Vérifier la colinéarité
-library(fixest)
-summary(model_basic, vcov = "hetero", stage = 1)
-
-# Voir toutes les variables estimées (y compris celles exclues)
-print(model_basic$collin.var)  # Variables collinéaires
-print(model_basic$multicol)    # Diagnostic de multicolinéarité
-
-# Alternative : modèle sans full_part pour voir si female apparaît
-model_test <- feols(rif_gap ~ female + age + age_sq + education + sector + contract_type,
-                    data = analysis_data,
-                    weights = ~weight,
-                    vcov = "hetero")
-summary(model_test)
-
-# Vérifier la distribution croisée
-table(analysis_data$female, analysis_data$full_part, useNA = "always")
-prop.table(table(analysis_data$female, analysis_data$full_part), margin = 1) * 100
-```
 
 
 
@@ -603,30 +576,91 @@ for (var in common_vars) {
 }
 ```
 
+------------------- Tableau des qualités d'ajustement etc --------------
 
 
 ```{r}
 
+# Code pour extraire les statistiques de qualité d'ajustement des modèles fixest
+cat("\n=== TABLEAU DES STATISTIQUES DE QUALITÉ D'AJUSTEMENT ===\n")
+cat("Statistiques de qualité d'ajustement des modèles UQR\n\n")
+
+# Fonction simple pour extraire R² ajusté d'un modèle fixest
+get_adj_r2_fixest <- function(model) {
+  # Méthode 1: via fitstat (préférée pour fixest)
+  if (requireNamespace("fixest", quietly = TRUE)) {
+    r2 <- tryCatch({
+      fixest::fitstat(model, "ar2", simplify = TRUE)
+    }, error = function(e) NA_real_)
+    if (!is.na(r2)) return(r2)
+  }
+  
+  # Méthode 2: via summary
+  r2 <- tryCatch({
+    summary(model)$adj.r.squared
+  }, error = function(e) NA_real_)
+  
+  return(r2)
+}
+
+# Créer le tableau directement
+cat(sprintf("%-25s %10s %12s %12s %12s\n", 
+            "Modèle", "N", "R² ajusté", "RMSE", "Within R²"))
+cat(rep("-", 71), "\n", sep = "")
+
+# Liste des modèles et de leurs noms
+model_info <- list(
+  list(name = "Modèle 1 (Basique)", model = model_basic_corr),
+  list(name = "Modèle 2 (Pays FE)", model = model_country_fe_corr),
+  list(name = "Modèle 3 (Tendance)", model = model_trend_corr),
+  list(name = "Modèle 4a (D10)", model = model_d10_corr),
+  list(name = "Modèle 4b (D90)", model = model_d90_corr)
+)
+
+# Afficher les statistiques pour chaque modèle
+for (info in model_info) {
+  model <- info$model
+  model_name <- info$name
+  
+  # Nombre d'observations
+  n_obs <- nobs(model)
+  
+  # R² ajusté
+  adj_r2 <- get_adj_r2_fixest(model)
+  
+  # RMSE - calcul direct si nécessaire
+  rmse_val <- tryCatch({
+    # Essayer d'obtenir le RMSE du summary
+    smry <- summary(model)
+    if (!is.null(smry$sigma)) {
+      smry$sigma
+    } else {
+      # Calcul manuel du RMSE
+      sqrt(sum(resid(model)^2) / (n_obs - length(coef(model))))
+    }
+  }, error = function(e) {
+    sqrt(sum(resid(model)^2) / (n_obs - length(coef(model))))
+  })
+  
+  # Within R² pour les modèles avec effets fixes
+  within_r2 <- tryCatch({
+    smry <- summary(model)
+    smry$r2within
+  }, error = function(e) NA_real_)
+  
+  # Formater l'affichage
+  adj_r2_display <- ifelse(is.na(adj_r2) || is.null(adj_r2), 
+                          "0.0000", sprintf("%.4f", adj_r2))
+  rmse_display <- sprintf("%.3f", rmse_val)
+  within_r2_display <- ifelse(is.na(within_r2) || is.null(within_r2), 
+                             "0.0000", sprintf("%.4f", within_r2))
+  
+  # Afficher la ligne
+  cat(sprintf("%-25s %10d %12s %12s %12s\n",
+              model_name, n_obs, adj_r2_display, rmse_display, within_r2_display))
+}
+
+cat("\nNote: Les modèles D10 et D90 utilisent la régression RIF pour les quantiles 10% et 90%.\n")
+cat("Within R² n'est disponible que pour les modèles avec effets fixes pays.\n")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
