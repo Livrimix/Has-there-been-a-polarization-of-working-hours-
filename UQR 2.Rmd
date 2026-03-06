@@ -131,7 +131,7 @@ analysis_data <- data_modifiable %>%
   ) %>%
   # CORRECTION ICI : Utiliser "Employed" au lieu de 1
   filter(`Being in employment` == "Employed") %>%
-  filter(!is.na(hours), hours > 0, hours < 100) %>%
+  filter(!is.na(hours), hours > 0, hours < 97) %>%
   mutate(
     education = as.factor(education),
     sector = as.factor(sector),

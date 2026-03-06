@@ -1,0 +1,543 @@
+---
+title: "Graphiques et stats desc après UQR"
+output: html_document
+date: "2026-03-06"
+---
+
+```{r}
+---
+title: "UQR 2"
+output: html_document
+date: "2026-01-25"
+---
+
+```{r}
+
+# --- CODE DE PRÉPARATION DES DONNÉES POUR RENDRE LE SCRIPT INDÉPENDANT ---
+
+# Charger les packages nécessaires
+library(haven)
+library(dplyr)
+library(stringr)
+library(purrr)
+library(forcats)
+
+# Charger les données directement depuis le fichier DTA
+data <- read_dta("eu-lfs 2023 sample.dta")
+
+# Créer data_modifiable (équivalent au premier script)
+data_modifiable <- data
+
+# Transformer les variables en facteurs et gérer les "Not available"
+factor_vars <- c("refmonth", "hhtype", "ageresid", "hhlink", "wkstat", "absreas", 
+                 "empstat", "numjob", "seekwork", "wantwork", "actmetne", "wishmore",
+                 "avaireas", "ilostat", "homework", "stapro", "isco08_3d", "eseg_2d",
+                 "ftpt", "temp", "tempdur", "tempreas", "tempagcy", "ftptreas",
+                 "varitime", "lookoj", "hwwish", "needcare")
+
+for (var in factor_vars) {
+  if (var %in% names(data_modifiable)) {
+    data_modifiable <- data_modifiable %>%
+      mutate(!!sym(var) := as_factor(!!sym(var)),
+             !!sym(var) := na_if(!!sym(var), "Not available"))
+  }
+}
+
+# Transformer la variable sexe (1=homme, 2=femme) en indicatrice (1=femme, 0=homme)
+if ("sex" %in% names(data_modifiable)) {
+  data_modifiable <- data_modifiable %>%
+    mutate(
+      sex = case_when(
+        sex == 1 ~ 0,    # Homme
+        sex == 2 ~ 1,    # Femme
+        TRUE ~ NA_real_
+      )
+    )
+}
+
+# Renommer les colonnes avec leurs labels (comme dans le premier script)
+labels <- sapply(data_modifiable, function(x) attr(x, "label"))
+labels[sapply(labels, is.null) | labels == ""] <- names(data_modifiable)[sapply(labels, is.null) | labels == ""]
+names(data_modifiable) <- labels
+
+# Rendre les noms uniques au cas où
+names(data_modifiable) <- make.unique(names(data_modifiable), sep = ".")
+
+# Vérification rapide
+cat("Dimensions de data_modifiable:", dim(data_modifiable), "\n")
+cat("Variables clés disponibles:\n")
+cat("  - Being in employment:", "Being in employment" %in% names(data_modifiable), "\n")
+cat("  - Number of hours usually worked, main job:", "Number of hours usually worked, main job" %in% names(data_modifiable), "\n")
+cat("  - Yearly weighting factor:", "Yearly weighting factor" %in% names(data_modifiable), "\n")
+cat("  - Age in completed years:", "Age in completed years" %in% names(data_modifiable), "\n")
+cat("  - Year of survey:", "Year of survey" %in% names(data_modifiable), "\n")
+cat("  - Country of residence:", "Country of residence" %in% names(data_modifiable), "\n")
+cat("  - Highest level of education (ISCED-11, 3 levels):", "Highest level of education (ISCED-11, 3 levels)" %in% names(data_modifiable), "\n")
+cat("  - Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit):", "Economic activity, main job, 2008 onwards (NACE Rev 2, 1 digit)" %in% names(data_modifiable), "\n")
+cat("  - Permanency of main job:", "Permanency of main job" %in% names(data_modifiable), "\n")
+cat("  - Full- or part-time, main job (self-defined):", "Full- or part-time, main job (self-defined)" %in% names(data_modifiable), "\n")
+
+# Vérifier comment est codée la variable "Being in employment"
+cat("\nCodage de 'Being in employment':\n")
+if ("Being in employment" %in% names(data_modifiable)) {
+  print(table(data_modifiable$`Being in employment`, useNA = "always"))
+}
+
+# --- FIN DU CODE DE PRÉPARATION ---
+```
+
+
+```{r}
+# Charger ggplot2 en plus de vos packages existants
+library(ggplot2)
+library(dplyr)
+
+
+# 1. Préparation des données et calcul des moyennes
+df_plot <- data_modifiable %>%
+  # Garder uniquement les lignes avec des valeurs valides pour les heures, l'année, le pays et les poids
+  filter(
+    # --- AJOUT DU FILTRE POUR NE GARDER QUE LES PERSONNES EN EMPLOI ---
+    `Being in employment` == "Employed",
+    
+    !is.na(`Number of hours usually worked, main job`),
+    !is.na(`Yearly weighting factor`),
+    !is.na(`Year of survey`),
+    !is.na(`Country of residence`),
+    # Exclure les valeurs non applicables ou aberrantes (0 et 99)
+    `Number of hours usually worked, main job` < 96,
+    `Number of hours usually worked, main job` > 0
+  )
+
+# Calcul de la moyenne par pays et par année
+df_country <- df_plot %>%
+  group_by(`Country of residence`, `Year of survey`) %>%
+  summarise(
+    avg_hours = weighted.mean(`Number of hours usually worked, main job`, w = `Yearly weighting factor`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Calcul de la moyenne globale de l'UE par année
+df_eu <- df_plot %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    avg_hours = weighted.mean(`Number of hours usually worked, main job`, w = `Yearly weighting factor`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# 2. Création du graphique avec ggplot2
+p = ggplot() +
+  # Courbes individuelles par pays (grises, sans légende)
+  geom_line(
+    data = df_country, 
+    aes(x = `Year of survey`, y = avg_hours, group = `Country of residence`), 
+    color = "grey75", 
+    alpha = 0.6, 
+    linewidth = 0.8
+  ) +
+  # Courbe moyenne de l'UE (bleue, mise en valeur)
+  geom_line(
+    data = df_eu, 
+    aes(x = `Year of survey`, y = avg_hours), 
+    color = "#000000", # Bleu de l'Union Européenne
+    linewidth = 1.5
+  ) +
+  # Ajout de points sur la courbe de l'UE pour marquer les années
+  geom_point(
+    data = df_eu, 
+    aes(x = `Year of survey`, y = avg_hours), 
+    color = "#000000", 
+    size = 2.5
+  ) +
+  # Esthétique et habillage du graphique
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Évolution du temps de travail hebdomadaire habituel",
+    subtitle = "Moyenne de l'Union Européenne (en noir) par rapport aux pays individuels (en gris)\nPopulation : Personnes en emploi uniquement",
+    x = "Année d'enquête",
+    y = "Heures de travail moyennes (emploi principal)",
+    caption = "Source : Microdonnées EU-LFS"
+  ) +
+  coord_cartesian(ylim = c(30, 45)) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "grey30", margin = margin(b = 15)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    panel.grid.minor = element_blank() # Enlever les petites lignes de la grille pour plus de clarté
+  )
+
+print(p)
+ggsave("evolution_moyen_temps_usuel_courbes_pays.png",
+       plot = p,
+       width = 10,      # largeur en pouces
+       height = 6,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+
+```
+
+
+
+
+
+```{r}
+# Charger les packages
+library(ggplot2)
+library(dplyr)
+install.packages("Hmisc")
+library(Hmisc) 
+
+# 1. Préparation des données (Identique pour les deux graphiques)
+df_plot <- data_modifiable %>%
+  filter(
+    # On garde uniquement les personnes en emploi
+    `Being in employment` == "Employed",
+    !is.na(`Number of hours usually worked, main job`),
+    !is.na(`Yearly weighting factor`),
+    !is.na(`Year of survey`),
+    !is.na(`Country of residence`),
+    # Exclure les valeurs non applicables (0) ou aberrantes (99)
+    `Number of hours usually worked, main job` < 97,
+    `Number of hours usually worked, main job` > 0
+  )
+
+# ==========================================
+# PARTIE 1 : ÉVOLUTION DU 1ER DÉCILE (D1)
+# ==========================================
+
+# Calcul du D1 (0.1) par pays et par année
+df_country_d1 <- df_plot %>%
+  group_by(`Country of residence`, `Year of survey`) %>%
+  summarise(
+    decile_1 = wtd.quantile(
+      `Number of hours usually worked, main job`, 
+      weights = `Yearly weighting factor`, 
+      probs = 0.1, 
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+# Calcul du D1 (0.1) global pour l'UE
+df_eu_d1 <- df_plot %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    decile_1 = wtd.quantile(
+      `Number of hours usually worked, main job`, 
+      weights = `Yearly weighting factor`, 
+      probs = 0.1, 
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+# Graphique pour le 1er décile
+graph_d1 <- ggplot() +
+  geom_line(data = df_country_d1, aes(x = `Year of survey`, y = decile_1, group = `Country of residence`), color = "grey75", alpha = 0.6, linewidth = 0.8) +
+  geom_line(data = df_eu_d1, aes(x = `Year of survey`, y = decile_1), color = "#003399", linewidth = 1.5) +
+  geom_point(data = df_eu_d1, aes(x = `Year of survey`, y = decile_1), color = "#003399", size = 2.5) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Évolution du 1er décile (D1) du temps de travail",
+    subtitle = "Les 10% des travailleurs effectuant le moins d'heures (UE en bleu, pays en gris)",
+    x = "Année d'enquête",
+    y = "Heures de travail (1er décile)",
+    caption = "Source : Microdonnées EU-LFS"
+  ) +
+  # L'axe Y est adapté car le D1 est souvent très bas (ex: temps partiel de 8 à 20h)
+  coord_cartesian(ylim = c(5, 45)) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "grey30", margin = margin(b = 15)),
+    panel.grid.minor = element_blank()
+  )
+
+print(graph_d1)
+ggsave("evolution_d1_temps_usuel_courbes_pays.png",
+       plot = graph_d1,
+       width = 10,      # largeur en pouces
+       height = 6,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+```
+
+
+```{r}
+# ==========================================
+# PARTIE 2 : ÉVOLUTION DU DERNIER DÉCILE (D9)
+# ==========================================
+
+# Calcul du D9 (0.9) par pays et par année
+df_country_d9 <- df_plot %>%
+  group_by(`Country of residence`, `Year of survey`) %>%
+  summarise(
+    decile_9 = wtd.quantile(
+      `Number of hours usually worked, main job`, 
+      weights = `Yearly weighting factor`, 
+      probs = 0.9, 
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+# Calcul du D9 (0.9) global pour l'UE
+df_eu_d9 <- df_plot %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    decile_9 = wtd.quantile(
+      `Number of hours usually worked, main job`, 
+      weights = `Yearly weighting factor`, 
+      probs = 0.9, 
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  )
+
+# Graphique pour le 9ème décile
+graph_d9 <- ggplot() +
+  geom_line(data = df_country_d9, aes(x = `Year of survey`, y = decile_9, group = `Country of residence`), color = "grey75", alpha = 0.6, linewidth = 0.8) +
+  geom_line(data = df_eu_d9, aes(x = `Year of survey`, y = decile_9), color = "#990000", linewidth = 1.5) + # Mis en rouge sombre pour différencier du D1
+  geom_point(data = df_eu_d9, aes(x = `Year of survey`, y = decile_9), color = "#990000", size = 2.5) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Évolution du 9ème décile (D9) du temps de travail",
+    subtitle = "Les 10% des travailleurs effectuant le plus d'heures (UE en rouge, pays en gris)",
+    x = "Année d'enquête",
+    y = "Heures de travail (9ème décile)",
+    caption = "Source : Microdonnées EU-LFS"
+  ) +
+  # L'axe Y est adapté car le D9 est très élevé (ex: 40 à 60h)
+  coord_cartesian(ylim = c(40, 60)) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "grey30", margin = margin(b = 15)),
+    panel.grid.minor = element_blank()
+  )
+
+print(graph_d9)
+ggsave("evolution_d9_temps_usuel_courbes_pays.png",
+       plot = graph_d9,
+       width = 10,      # largeur en pouces
+       height = 6,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+```
+
+
+
+```{r}
+# Charger les packages (Hmisc est toujours requis pour wtd.quantile)
+library(ggplot2)
+library(dplyr)
+library(Hmisc)
+
+# 1. Préparation des données 
+df_plot <- data_modifiable %>%
+  filter(
+    `Being in employment` == "Employed",
+    !is.na(`Number of hours usually worked, main job`),
+    !is.na(`Yearly weighting factor`),
+    !is.na(`Year of survey`),
+    !is.na(`Country of residence`),
+    `Number of hours usually worked, main job` < 97,
+    `Number of hours usually worked, main job` > 0
+  )
+
+# 2. Calcul de l'écart inter-décile (D9 - D1) par pays et par année
+df_country_ecart <- df_plot %>%
+  group_by(`Country of residence`, `Year of survey`) %>%
+  summarise(
+    decile_1 = wtd.quantile(`Number of hours usually worked, main job`, weights = `Yearly weighting factor`, probs = 0.1, na.rm = TRUE),
+    decile_9 = wtd.quantile(`Number of hours usually worked, main job`, weights = `Yearly weighting factor`, probs = 0.9, na.rm = TRUE),
+    # Calcul de l'écart
+    ecart_interdecile = decile_9 - decile_1,
+    .groups = "drop"
+  )
+
+# 3. Calcul de l'écart inter-décile (D9 - D1) global pour l'UE
+df_eu_ecart <- df_plot %>%
+  group_by(`Year of survey`) %>%
+  summarise(
+    decile_1 = wtd.quantile(`Number of hours usually worked, main job`, weights = `Yearly weighting factor`, probs = 0.1, na.rm = TRUE),
+    decile_9 = wtd.quantile(`Number of hours usually worked, main job`, weights = `Yearly weighting factor`, probs = 0.9, na.rm = TRUE),
+    # Calcul de l'écart
+    ecart_interdecile = decile_9 - decile_1,
+    .groups = "drop"
+  )
+
+# 4. Création du graphique avec ggplot2
+graph_d9_d1 = ggplot() +
+  # Courbes individuelles par pays (grises, sans légende)
+  geom_line(
+    data = df_country_ecart, 
+    aes(x = `Year of survey`, y = ecart_interdecile, group = `Country of residence`), 
+    color = "grey75", 
+    alpha = 0.6, 
+    linewidth = 0.8
+  ) +
+  # Courbe de l'écart inter-décile de l'UE (vert, mise en valeur)
+  geom_line(
+    data = df_eu_ecart, 
+    aes(x = `Year of survey`, y = ecart_interdecile), 
+    color = "#1B9E77", # Vert 
+    linewidth = 1.5
+  ) +
+  # Ajout de points sur la courbe de l'UE
+  geom_point(
+    data = df_eu_ecart, 
+    aes(x = `Year of survey`, y = ecart_interdecile), 
+    color = "#1B9E77", 
+    size = 2.5
+  ) +
+  # Esthétique et habillage du graphique
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Évolution des inégalités de temps de travail (Écart D9 - D1)",
+    subtitle = "Différence en heures entre les 10% travaillant le plus et les 10% travaillant le moins\n(Moyenne UE en vert, pays individuels en gris)",
+    x = "Année d'enquête",
+    y = "Écart inter-décile (heures)",
+    caption = "Source : Microdonnées EU-LFS"
+  ) +
+  # L'axe Y est adapté à une différence (par exemple 45h - 15h = 30h d'écart)
+  coord_cartesian(ylim = c(0, 40)) + 
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "grey30", margin = margin(b = 15)),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    panel.grid.minor = element_blank()
+  )
+
+print(graph_d9_d1)
+ggsave("evolution_ecart_D9-D1_temps_usuel_courbes_pays.png",
+       plot = graph_d9_d1,
+       width = 10,      # largeur en pouces
+       height = 6,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+```
+
+
+```{r}
+library(haven)
+
+# On s'assure que la colonne est bien convertie en facteur utilisant ses labels
+data_modifiable$`Country of residence` <- as_factor(data_modifiable$`Country of residence`)
+
+# Pour vérifier que cela a marché et voir les noms des pays :
+unique(data_modifiable$`Country of residence`)
+
+
+# Charger les packages nécessaires
+library(ggplot2)
+library(dplyr)
+library(haven)
+library(Hmisc)
+
+# 1. Mise à jour des labels et préparation des données
+# On s'assure d'avoir les noms de pays en texte pour l'affichage
+data_modifiable$`Country of residence` <- as_factor(data_modifiable$`Country of residence`)
+
+df_plot <- data_modifiable %>%
+  filter(
+    `Being in employment` == "Employed" | `Being in employment` == 1, # Sécurité au cas où ce soit un chiffre ou un texte
+    !is.na(`Number of hours usually worked, main job`),
+    !is.na(`Yearly weighting factor`),
+    !is.na(`Year of survey`),
+    !is.na(`Country of residence`),
+    `Number of hours usually worked, main job` < 97,
+    `Number of hours usually worked, main job` > 0
+  )
+
+# 2. Calcul du D1 et du D9 par pays et par année
+df_country_deciles <- df_plot %>%
+  group_by(`Country of residence`, `Year of survey`) %>%
+  summarise(
+    decile_1 = wtd.quantile(`Number of hours usually worked, main job`, weights = `Yearly weighting factor`, probs = 0.1, na.rm = TRUE),
+    decile_9 = wtd.quantile(`Number of hours usually worked, main job`, weights = `Yearly weighting factor`, probs = 0.9, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# 3. Création du graphique en grille (Facet Wrap)
+tableau_par_pays_ecart = ggplot(data = df_country_deciles, aes(x = `Year of survey`)) +
+  # Courbe du D9 (en rouge)
+  geom_line(aes(y = decile_9), color = "#CC0000", linewidth = 0.8) +
+  # Courbe du D1 (en bleu)
+  geom_line(aes(y = decile_1), color = "#003399", linewidth = 0.8) +
+  
+  # Création de la grille de 5 colonnes et 6 lignes
+  facet_wrap(~ `Country of residence`, ncol = 5, nrow = 6) +
+  
+  # Esthétique optimisée pour prendre peu de place
+  theme_minimal(base_size = 10) +
+  labs(
+    title = "Évolution des déciles de temps de travail par pays",
+    subtitle = "D9 (rouge) et D1 (bleu)",
+    x = NULL, # Enlever le titre de l'axe X pour gagner de l'espace vertical
+    y = "Heures de travail"
+  ) +
+  # Fixer les limites pour que tous les graphiques aient la même échelle
+  coord_cartesian(ylim = c(10, 65)) + 
+  
+  # Ajustement des textes pour que tout rentre sans se chevaucher
+  theme(
+    strip.text = element_text(face = "bold", size = 8, margin = margin(b = 2, t = 2)), # Titres des pays
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 6), # Tourner les années pour éviter qu'elles se touchent
+    axis.text.y = element_text(size = 7),
+    panel.spacing.x = unit(0.5, "lines"), # Réduire l'espacement horizontal entre les petits graphiques
+    panel.spacing.y = unit(0.3, "lines"), # Réduire l'espacement vertical
+    plot.title = element_text(face = "bold", size = 14),
+    panel.grid.minor = element_blank()
+  )
+
+print(tableau_par_pays_ecart)
+
+ggsave("tableau__courbes_par_pays_ecart_D9-D1_temps_usuel.png",
+       plot = tableau_par_pays_ecart,
+       width = 7,      # largeur en pouces
+       height = 6,     # hauteur en pouces
+       dpi = 300,      # résolution élevée
+       bg = "white")   # fond blanc
+```
+
+```{r}
+# Charger les packages nécessaires
+library(dplyr)
+library(Hmisc)
+
+# 1. Calcul des déciles (en utilisant le df_plot déjà filtré pour les personnes en emploi)
+df_deciles_output <- df_plot %>%
+  group_by(`Country of residence`, `Year of survey`) %>%
+  summarise(
+    D1 = wtd.quantile(
+      `Number of hours usually worked, main job`, 
+      weights = `Yearly weighting factor`, 
+      probs = 0.1, 
+      na.rm = TRUE
+    ),
+    D9 = wtd.quantile(
+      `Number of hours usually worked, main job`, 
+      weights = `Yearly weighting factor`, 
+      probs = 0.9, 
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  # Trier pour que ce soit bien ordonné par pays puis par année
+  arrange(`Country of residence`, `Year of survey`)
+
+# ---------------------------------------------------------
+# OPTION 1 : Afficher tout le résultat dans la console R 
+# (pratique pour faire un simple copier-coller vers moi)
+# ---------------------------------------------------------
+print(df_deciles_output, n = Inf)
+
+# ---------------------------------------------------------
+# OPTION 2 : Exporter les résultats dans un fichier CSV
+# (Il s'enregistrera dans votre dossier de travail actuel)
+# ---------------------------------------------------------
+write.csv(df_deciles_output, "deciles_par_pays_annee.csv", row.names = FALSE)
+```
+
+
