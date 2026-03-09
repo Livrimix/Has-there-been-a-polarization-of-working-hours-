@@ -14,6 +14,8 @@ library(dplyr)
 library(stringr)
 library(purrr)
 library(forcats)
+library(tidyr)
+library(oaxaca)
 
 # Charger les données directement depuis le fichier DTA
 data <- read_dta("eu-lfs 2023 sample.dta")
@@ -664,3 +666,145 @@ cat("\nNote: Les modèles D10 et D90 utilisent la régression RIF pour les quant
 cat("Within R² n'est disponible que pour les modèles avec effets fixes pays.\n")
 ```
 
+-------------------------------------------------------------------------
+Décomposition Oaxaca-Blinder sur la Polarisation
+-------------------------------------------------------------------------
+
+```{r}
+
+cat("\n=== DÉCOMPOSITION OAXACA-BLINDER ===\n")
+cat("Analyse des sources de l'écart de polarisation entre hommes et femmes\n\n")
+
+# Préparation des données pour la fonction oaxaca()
+# La fonction oaxaca n'utilise pas la syntaxe "|" pour les effets fixes comme feols.
+# Nous devons donc inclure explicitement "country" comme variable explicative.
+# De plus, oaxaca requiert que la variable de groupe soit numérique (0/1) ou logique.
+oaxaca_data <- analysis_data_corrected %>%
+  # S'assurer que female est bien numérique (1 = femme, 0 = homme)
+  mutate(female_num = as.numeric(as.character(female))) %>%
+  # Retirer les valeurs manquantes sur les variables utilisées pour éviter les erreurs
+  drop_na(rif_gap_new, female_num, age, age_sq, education, sector, contract_type, full_part, country)
+
+# Exécution de la décomposition
+# Variable dépendante : rif_gap_new (écart de polarisation D90 - D10)
+# Variable de groupe : female_num
+oaxaca_results <- oaxaca(
+  formula = rif_gap_new ~ age + age_sq + education + sector + contract_type + full_part + country | female_num, 
+  data = oaxaca_data, 
+  R = 50 # Nombre d'itérations bootstrap pour les erreurs-types (mettre 100 pour le rendu final)
+)
+
+# Résumé complet des résultats (écarts globaux et décomposition)
+print(summary(oaxaca_results))
+```
+
+-------------------------------------------------------------------------
+VISUALISATION DES RÉSULTATS OAXACA
+-------------------------------------------------------------------------
+
+```{r}
+# ---------------------------------------------------------
+# GRAPH 1: Global Decomposition (Macro)
+# ---------------------------------------------------------
+
+# Extracting global results (Using the "pooled" model, row 5)
+val_total <- oaxaca_results$y$y.diff
+val_expl <- oaxaca_results$twofold$overall[5, "coef(explained)"]
+val_unexpl <- oaxaca_results$twofold$overall[5, "coef(unexplained)"]
+
+df_macro <- data.frame(
+  Component = factor(
+    c("1. Total Gap (Women - Men)", "2. Composition Effect (Explained)", "3. Structural Effect (Unexplained)"),
+    levels = c("3. Structural Effect (Unexplained)", "2. Composition Effect (Explained)", "1. Total Gap (Women - Men)")
+  ),
+  Value = c(val_total, val_expl, val_unexpl)
+)
+
+# Creating the Macro graph
+g1 <- ggplot(df_macro, aes(x = Component, y = Value, fill = Value > 0)) +
+  geom_bar(stat = "identity", width = 0.6, color = "black", alpha = 0.8) +
+  geom_text(aes(label = sprintf(ifelse(Value > 0, "+%.2f h", "%.2f h"), Value),
+                hjust = ifelse(Value > 0, -0.2, 1.2)),
+            size = 5, fontface = "bold") +
+  coord_flip() +
+  scale_fill_manual(values = c("TRUE" = "#D55E00", "FALSE" = "#0072B2")) + # Colorblind-friendly colors
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 16, margin = margin(b = 10)),
+    axis.title.y = element_blank(),
+    panel.grid.major.y = element_blank()
+  ) +
+  labs(
+    title = "Global decomposition of working hours polarization",
+    subtitle = "Contribution in hours (Twofold Oaxaca-Blinder method)",
+    y = "Difference in hours"
+  ) +
+  scale_y_continuous(limits = c(-2.5, 2.5)) # Adjust limits if necessary
+
+print(g1)
+
+# Optional: Save the graph in high quality
+#ggsave("Oaxaca_Macro_EN.png", plot = g1, width = 10, height = 5, dpi = 300)
+
+
+# ---------------------------------------------------------
+# GRAPH 2: Top 10 of the Composition Effect (Micro)
+# ---------------------------------------------------------
+
+# Extracting detailed explained part (pooled model, list 5)
+df_micro_brut <- as.data.frame(oaxaca_results$twofold$variables[[5]])
+df_micro_brut$Variable <- rownames(df_micro_brut)
+
+# Cleaning, translating, and selecting the Top 10
+df_micro <- df_micro_brut %>%
+  select(Variable, coef_explained = `coef(explained)`) %>%
+  filter(!Variable %in% c("(Intercept)", "country")) %>% # Remove constants and pure fixed effects
+  mutate(
+    # Translation for beautiful labels on the graph
+    Label = case_when(
+      Variable == "full_partFull-time job" ~ "Status: Full-time",
+      Variable == "full_partPart-time job" ~ "Status: Part-time",
+      Variable == "education3" ~ "Education: High",
+      Variable == "education2" ~ "Education: Medium",
+      Variable == "contract_typetemporary" ~ "Temporary Contract",
+      Variable == "age" ~ "Age",
+      Variable == "age_sq" ~ "Age (squared)",
+      TRUE ~ Variable # Leaves sectors as they are if they are in the top 10
+    ),
+    # Replace "sectorX" with "Sector X"
+    Label = gsub("sector([0-9\\-]+)", "Sector \\1", Label)
+  ) %>%
+  # Sort by absolute impact to find the most determining variables
+  mutate(Abs_Impact = abs(coef_explained)) %>%
+  arrange(desc(Abs_Impact)) %>%
+  head(10) # Keep only the top 10 for a clean look
+
+# Creating the Micro graph
+g2 <- ggplot(df_micro, aes(x = reorder(Label, coef_explained), y = coef_explained, fill = coef_explained > 0)) +
+  geom_bar(stat = "identity", width = 0.7, color = "black", alpha = 0.8) +
+  geom_text(aes(label = sprintf(ifelse(coef_explained > 0, "+%.2f", "%.2f"), coef_explained),
+                hjust = ifelse(coef_explained > 0, -0.2, 1.2)),
+            size = 4.5) +
+  coord_flip() +
+  scale_fill_manual(values = c("TRUE" = "#D55E00", "FALSE" = "#0072B2")) +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "grey30", margin = margin(b = 15)),
+    axis.title.y = element_blank(),
+    panel.grid.major.y = element_line(linetype = "dotted", color = "grey80")
+  ) +
+  labs(
+    title = "Top 10 factors explaining the polarization gap",
+    subtitle = "Which characteristics widen or reduce the gap between women and men?",
+    y = "Contribution to the explained part (Hours)"
+  ) +
+  scale_y_continuous(limits = c(-1.5, 0.5)) # Leave some margin for the text
+
+print(g2)
+
+# Optional: Save the detailed graph in high quality
+#ggsave("Oaxaca_Micro_Top10_EN.png", plot = g2, width = 10, height = 6, dpi = 300)
+```
